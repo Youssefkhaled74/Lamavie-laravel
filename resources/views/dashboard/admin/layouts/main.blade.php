@@ -986,7 +986,7 @@
             </li>
 
             <!-- Car Wash (moved here so related groups are together) -->
-            @php($carWashActive = request()->routeIs('admin.vehicle-timeline.*') || request()->routeIs('admin.driver-vehicles.*') || request()->routeIs('admin.car-wash-drivers.*') || request()->routeIs('admin.place-of-the-cleaning.*') || request()->routeIs('admin.cars-additional-service.*') || request()->routeIs('admin.frequency.*'))
+            @php($carWashActive = request()->routeIs('admin.vehicle-timeline.*') || request()->routeIs('admin.driver-vehicles.*') || request()->routeIs('admin.car-wash-drivers.*') || request()->routeIs('admin.place-of-the-cleaning.*') || request()->routeIs('admin.cars-additional-service.*') || request()->routeIs('admin.frequency.*') || request()->routeIs('admin.car_type.*'))
             <li class="nav-item">
                 <a href="#carWashSubmenu" class="nav-link d-flex justify-content-between align-items-center {{ $carWashActive ? 'active' : '' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ $carWashActive ? 'true' : 'false' }}">
                     <div style="display:flex; align-items:center; gap:12px;"><i class="fas fa-shower"></i><span data-en="Car Wash" data-ar="غسيل السيارات">Car Wash</span></div>
@@ -1031,6 +1031,12 @@
                             <a href="{{ route('admin.frequency.index') }}" class="nav-link {{ request()->routeIs('admin.frequency.*') ? 'active' : '' }}">
                                 <i class="fas fa-stopwatch"></i>
                                 <span data-en="Frequency" data-ar="التكرار">Frequency</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.car_type.index') }}" class="nav-link {{ request()->routeIs('admin.car_type.*') ? 'active' : '' }}">
+                                <i class="fas fa-car-side"></i>
+                                <span data-en="Car Types" data-ar="أنواع المركبات">Car Types</span>
                             </a>
                         </li>
                     </ul>

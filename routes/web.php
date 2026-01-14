@@ -13,6 +13,7 @@ use App\Http\Controllers\Dashboard\Admin\ServiceController;
 use App\Http\Controllers\Dashboard\Admin\SettingsController;
 use App\Http\Controllers\Dashboard\Admin\DashboardController;
 use App\Http\Controllers\Dashboard\Admin\FrequencyController;
+use App\Http\Controllers\Dashboard\Admin\CarTypeController;
 use App\Http\Controllers\Dashboard\Admin\YourItemsController;
 use App\Http\Controllers\Dashboard\Admin\CarpetSizeController;
 use App\Http\Controllers\Dashboard\Admin\FabricTypeController;
@@ -224,6 +225,7 @@ Route::prefix('admin')->name('admin.')->middleware([\App\Http\Middleware\LogAdmi
     Route::resource('labs', \App\Http\Controllers\Dashboard\Admin\LabsController::class)->middleware('auth:admin');
     Route::resource('type-of-package', TypeOfPackageController::class)->middleware('auth:admin');
     Route::resource('frequency', FrequencyController::class)->middleware('auth:admin');
+    Route::resource('car_type', CarTypeController::class)->middleware('auth:admin');
     Route::resource('measurement', MeasurementController::class)->middleware('auth:admin');
     Route::resource('fabric-type', FabricTypeController::class)->middleware('auth:admin');
     // Car wash drivers (Car Wash feature)

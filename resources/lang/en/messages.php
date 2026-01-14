@@ -95,5 +95,7 @@ return [
     'points_retrieved_successfully'=> 'points_retrieved_successfully',
     'service_types_listed' => 'service_types_listed',
     'measurements_not_found' => 'No measurements found for this service category.',
-    'measurements_listed' => 'Measurements retrieved successfully.'
+    'measurements_listed' => 'Measurements retrieved successfully.',
+    'car_types_not_found' => 'No car types found for this service category.',
+    'car_types_listed' => 'Car types retrieved successfully.',
 ];

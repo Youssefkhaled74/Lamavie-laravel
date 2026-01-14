@@ -88,4 +88,6 @@ return [
     'number_of_cleaners_listed' => 'تم سرد عدد المنظفين بنجاح.',
     'measurements_not_found' => 'لم يتم العثور على قياسات لهذه الفئة الخدمية.',
     'measurements_listed' => 'تم استرجاع القياسات بنجاح.',
+    'car_types_not_found' => 'لم يتم العثور على أنواع المركبات لهذه الفئة الخدمية.',
+    'car_types_listed' => 'تم استرجاع أنواع المركبات بنجاح.',
 ];

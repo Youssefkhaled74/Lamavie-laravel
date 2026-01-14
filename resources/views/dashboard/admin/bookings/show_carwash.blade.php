@@ -82,6 +82,9 @@
             @endif
           </div>
         </div>
+
+        {{-- Display cars details --}}
+        @include('dashboard.admin.bookings.partials._carwash_cars', ['payload' => $payload])
       @else
         <div class="muted">No car-wash payload available for this booking.</div>
       @endif

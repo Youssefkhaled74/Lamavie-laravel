@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Booking\BookingController;
 use App\Http\Controllers\Api\Service\ServiceController;
 use App\Http\Controllers\Api\Settings\SettingsController;
 use App\Http\Controllers\Api\Frequency\FrequencyController;
+use App\Http\Controllers\Api\CarType\CarTypeController;
 use App\Http\Controllers\Api\Search\GlobalSearchController;
 use App\Http\Controllers\Api\YourItems\YourItemsController;
 use App\Http\Controllers\Api\CarpetSize\CarpetSizeController;
@@ -148,6 +149,10 @@ Route::prefix('type-of-package')->group(function () {
 
 Route::prefix('frequency')->group(function () {
     Route::get('{serviceCategoryId}', [FrequencyController::class, 'index']);
+});
+
+Route::prefix('car-types')->group(function () {
+    Route::get('{serviceCategoryId}', [CarTypeController::class, 'index']);
 });
 
 Route::prefix('measurement')->group(function () {
