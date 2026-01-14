@@ -225,7 +225,7 @@ Route::prefix('admin')->name('admin.')->middleware([\App\Http\Middleware\LogAdmi
     Route::resource('labs', \App\Http\Controllers\Dashboard\Admin\LabsController::class)->middleware('auth:admin');
     Route::resource('type-of-package', TypeOfPackageController::class)->middleware('auth:admin');
     Route::resource('frequency', FrequencyController::class)->middleware('auth:admin');
-    Route::resource('car_type', CarTypeController::class)->middleware('auth:admin');
+    Route::resource('car_type', CarTypeController::class)->middleware(['auth:admin','permission:car_type.view|manage car type']);
     Route::resource('measurement', MeasurementController::class)->middleware('auth:admin');
     Route::resource('fabric-type', FabricTypeController::class)->middleware('auth:admin');
     // Car wash drivers (Car Wash feature)

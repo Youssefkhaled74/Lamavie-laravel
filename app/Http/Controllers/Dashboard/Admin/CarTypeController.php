@@ -12,7 +12,6 @@ class CarTypeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:admin');
         $this->middleware('permission:car_type.view')->only(['index','show']);
         $this->middleware('permission:manage car type')->only(['create','store','edit','update','destroy']);
     }
