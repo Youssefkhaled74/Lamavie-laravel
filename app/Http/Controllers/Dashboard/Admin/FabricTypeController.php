@@ -41,7 +41,7 @@ class FabricTypeController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.fabric-type.partials.items-table', compact('fabricTypes'))->render(),
-                'pagination' => $fabricTypes->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $fabricTypes->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

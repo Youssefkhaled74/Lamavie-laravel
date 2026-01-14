@@ -507,9 +507,6 @@
             overflow: auto;
         }
 
-        margin: 0;
-        }
-
         /* Charts and Tables */
         .chart-container {
             background: white;

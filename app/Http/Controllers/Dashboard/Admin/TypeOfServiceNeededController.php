@@ -41,7 +41,7 @@ class TypeOfServiceNeededController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.type-of-service-needed.partials.items-table', compact('typeOfServiceNeeded'))->render(),
-                'pagination' => $typeOfServiceNeeded->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $typeOfServiceNeeded->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

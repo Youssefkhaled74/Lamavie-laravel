@@ -41,7 +41,7 @@ class NumberOfCleanersController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.number-of-cleaners.partials.items-table', compact('numberOfCleaners'))->render(),
-                'pagination' => $numberOfCleaners->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $numberOfCleaners->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

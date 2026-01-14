@@ -41,7 +41,7 @@ class SizeOfStainController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.size-of-stain.partials.items-table', compact('sizeOfStains'))->render(),
-                'pagination' => $sizeOfStains->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $sizeOfStains->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

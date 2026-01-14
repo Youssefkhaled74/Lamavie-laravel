@@ -41,7 +41,7 @@ class FrequencyController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.frequency.partials.frequencies-table', compact('frequencies'))->render(),
-                'pagination' => $frequencies->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $frequencies->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

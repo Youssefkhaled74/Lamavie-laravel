@@ -42,7 +42,7 @@ class YourItemsController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.your-items.partials.items-table', compact('yourItems'))->render(),
-                'pagination' => $yourItems->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $yourItems->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

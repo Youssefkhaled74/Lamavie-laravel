@@ -41,7 +41,7 @@ class PackagesOptionalController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.packages-optional.partials.items-table', compact('packagesOptional'))->render(),
-                'pagination' => $packagesOptional->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $packagesOptional->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

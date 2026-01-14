@@ -41,7 +41,7 @@ class PresenceOfChildrenOrPetsController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.presence-of-children-or-pets.partials.items-table', compact('presenceOfChildrenOrPets'))->render(),
-                'pagination' => $presenceOfChildrenOrPets->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $presenceOfChildrenOrPets->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

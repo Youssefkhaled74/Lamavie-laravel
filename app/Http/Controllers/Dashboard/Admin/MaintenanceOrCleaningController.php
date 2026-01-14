@@ -41,7 +41,7 @@ class MaintenanceOrCleaningController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.maintenance-or-cleaning.partials.items-table', compact('maintenanceOrCleanings'))->render(),
-                'pagination' => $maintenanceOrCleanings->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $maintenanceOrCleanings->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

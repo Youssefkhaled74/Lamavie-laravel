@@ -41,7 +41,7 @@ class CarpetMaterialController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.carpet-material.partials.items-table', compact('carpetMaterials'))->render(),
-                'pagination' => $carpetMaterials->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $carpetMaterials->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

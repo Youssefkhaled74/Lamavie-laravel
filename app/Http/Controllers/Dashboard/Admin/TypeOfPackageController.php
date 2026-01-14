@@ -41,7 +41,7 @@ class TypeOfPackageController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.type-of-package.partials.packages-table', compact('typeOfPackages'))->render(),
-                'pagination' => $typeOfPackages->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $typeOfPackages->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

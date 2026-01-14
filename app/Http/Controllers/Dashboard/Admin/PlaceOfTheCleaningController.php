@@ -41,7 +41,7 @@ class PlaceOfTheCleaningController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.place-of-the-cleaning.partials.items-table', compact('placeOfTheCleanings'))->render(),
-                'pagination' => $placeOfTheCleanings->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $placeOfTheCleanings->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

@@ -35,7 +35,7 @@ class CarsAdditionalServiceController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.cars-additional-service.partials.items-table', compact('carsAdditionalServices'))->render(),
-                'pagination' => $carsAdditionalServices->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $carsAdditionalServices->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

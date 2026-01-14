@@ -41,7 +41,7 @@ class MeasurementController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.measurement.partials.items-table', compact('measurements'))->render(),
-                'pagination' => $measurements->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $measurements->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

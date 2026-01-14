@@ -39,7 +39,7 @@ class PaymentMethodController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.payment-methods.partials.items-table', compact('paymentMethods'))->render(),
-                'pagination' => $paymentMethods->appends(['status' => $request->status])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $paymentMethods->appends(['status' => $request->status])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

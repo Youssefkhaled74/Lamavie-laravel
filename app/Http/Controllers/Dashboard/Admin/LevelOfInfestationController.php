@@ -35,7 +35,7 @@ class LevelOfInfestationController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.level-of-infestation.partials.items-table', compact('levelOfInfestation'))->render(),
-                'pagination' => $levelOfInfestation->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $levelOfInfestation->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

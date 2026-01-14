@@ -37,7 +37,7 @@ class DriversController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.drivers.partials.items-table', compact('drivers'))->render(),
-                'pagination' => $drivers->appends(['q' => $request->q])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $drivers->appends(['q' => $request->q])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

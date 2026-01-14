@@ -34,7 +34,7 @@ class SettingsController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.settings.partials.items-table', compact('settings'))->render(),
-                'pagination' => $settings->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $settings->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 

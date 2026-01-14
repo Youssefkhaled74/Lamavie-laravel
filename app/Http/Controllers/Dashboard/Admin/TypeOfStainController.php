@@ -41,7 +41,7 @@ class TypeOfStainController extends Controller
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.type-of-stain.partials.items-table', compact('typeOfStains'))->render(),
-                'pagination' => $typeOfStains->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->render(),
+                'pagination' => $typeOfStains->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
             ]);
         }
 
