@@ -25,11 +25,36 @@ class BookingsSeeder extends Seeder
 
         // Create a booking for service_id = 1 (dry-clean-like)
         $firstDriver = \App\Models\Driver::first();
+
+        // Ensure there is at least one Service, ServiceCategory and ServiceType
+        $service = \App\Models\Service::first();
+        if (! $service) {
+            $service = \App\Models\Service::create([
+                'name' => ['en' => 'Default Service'],
+            ]);
+        }
+
+        $serviceCategory = \App\Models\ServiceCategory::where('service_id', $service->id)->first();
+        if (! $serviceCategory) {
+            $serviceCategory = \App\Models\ServiceCategory::create([
+                'name' => ['en' => 'Default Category'],
+                'service_id' => $service->id,
+            ]);
+        }
+
+        $serviceType = \App\Models\ServiceType::where('service_id', $service->id)->first();
+        if (! $serviceType) {
+            $serviceType = \App\Models\ServiceType::create([
+                'name' => ['en' => 'Default Type'],
+                'service_id' => $service->id,
+            ]);
+        }
+
         Booking::create([
             'user_id' => $user->id,
-            'service_id' => 1,
-            'service_type_id' => 1,
-            'service_category_id' => 1,
+            'service_id' => $service->id,
+            'service_type_id' => $serviceType->id,
+            'service_category_id' => $serviceCategory->id,
             'status' => 'pending',
             'driver_id' => $firstDriver ? $firstDriver->id : null,
             'order_number' => 'ORD-' . strtoupper(Str::random(8)),
@@ -46,12 +71,16 @@ class BookingsSeeder extends Seeder
             ],
         ]);
 
-        // Create a booking for service_id = 3 (car-wash-like)
+        // Create a booking for a second service (if exists) or reuse the first
+        $serviceForCar = \App\Models\Service::find(3) ?: $service;
+        $serviceCategoryForCar = \App\Models\ServiceCategory::where('service_id', $serviceForCar->id)->first() ?: $serviceCategory;
+        $serviceTypeForCar = \App\Models\ServiceType::where('service_id', $serviceForCar->id)->first() ?: $serviceType;
+
         Booking::create([
             'user_id' => $user->id,
-            'service_id' => 3,
-            'service_type_id' => 1,
-            'service_category_id' => 2,
+            'service_id' => $serviceForCar->id,
+            'service_type_id' => $serviceTypeForCar->id,
+            'service_category_id' => $serviceCategoryForCar->id,
             'status' => 'pending',
             'order_number' => 'ORD-' . strtoupper(Str::random(8)),
             'total' => 250.00,
