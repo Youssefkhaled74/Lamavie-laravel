@@ -277,32 +277,7 @@
                 <span class="lang-ar">إجراءات</span>
             </div>
 
-            {{-- Update Status --}}
-            <form method="post" action="{{ route('driver.bookings.update', $booking->id) }}" class="bk-form">
-                @csrf
-                @method('PUT')
 
-                <label class="bk-label">
-                    <span class="lang-en">Booking status</span>
-                    <span class="lang-ar">حالة الحجز</span>
-                </label>
-
-                <div class="input-group">
-                    <select name="status" class="form-select">
-                        <option value="pending" {{ $status=='pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="pickup" {{ $status=='pickup' ? 'selected' : '' }}>Pickup</option>
-                        <option value="delivered" {{ $status=='delivered' ? 'selected' : '' }}>Delivered</option>
-                        <option value="canceled" {{ $status=='canceled' ? 'selected' : '' }}>Canceled</option>
-                    </select>
-                    <button class="btn btn-primary">
-                        <i class="fa-solid fa-rotate me-2"></i>
-                        <span class="lang-en">Update</span>
-                        <span class="lang-ar">تحديث</span>
-                    </button>
-                </div>
-            </form>
-
-            <hr class="bk-hr">
 
             {{-- Lab operations --}}
             <div class="bk-block">
