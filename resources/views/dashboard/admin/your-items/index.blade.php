@@ -97,7 +97,7 @@
             <div class="text-muted small" id="range-text">
                 Showing {{ $yourItems->firstItem() ?? 0 }} - {{ $yourItems->lastItem() ?? 0 }} of {{ $yourItems->total() }}
             </div>
-            <div>
+            <div id="pagination-container">
                 {{ $yourItems->appends(['service_category_id' => request()->service_category_id, 'q' => request('q')])->links('vendor.pagination.bootstrap-5') }}
             </div>
         </div>
@@ -163,6 +163,9 @@
         text-transform: uppercase;
         font-size: 0.75rem;
         letter-spacing: 0.08em;
+        position: sticky;
+        top: 0;
+        z-index: 2;
     }
     .table-modern tbody tr {
         background: #ffffff;
@@ -180,6 +183,16 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+    }
+    .table-modern td {
+        vertical-align: middle;
+    }
+    .table-modern tbody tr {
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .table-modern tbody tr:hover {
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+        transform: translateY(-2px);
     }
     .badge-soft {
         background: rgba(37, 99, 235, 0.12);
@@ -229,6 +242,7 @@
         const clearFiltersBtn = document.getElementById('clear-filters');
         const tableBody = document.getElementById('items-table-body');
         const paginationLinks = document.getElementById('pagination-links');
+        const paginationContainer = document.getElementById('pagination-container');
         const statTotal = document.getElementById('stat-total');
         const statCount = document.getElementById('stat-count');
         const rangeText = document.getElementById('range-text');
@@ -255,7 +269,9 @@
             .then(response => response.json())
             .then(data => {
                 tableBody.innerHTML = data.table;
-                paginationLinks.querySelector('div:last-child').innerHTML = data.pagination;
+                if (paginationContainer) {
+                    paginationContainer.innerHTML = data.pagination || '';
+                }
                 if (data.meta) {
                     statTotal.textContent = data.meta.total ?? statTotal.textContent;
                     statCount.textContent = data.meta.count ?? statCount.textContent;

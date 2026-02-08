@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Notifications\AdminNewBookingNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class BookingObserver
 {
@@ -25,6 +26,15 @@ class BookingObserver
         ]);
         
         try {
+            // Store short-lived broadcast so polling dashboards show an alert (even without FCM)
+            $unseenCount = Booking::where('is_unseen', true)->count();
+            $customerName = $booking->user->name ?? $booking->user_name ?? 'A customer';
+            Cache::put('admin.notifications.broadcast', [
+                'title' => 'New Booking #' . ($booking->order_number ?? $booking->id),
+                'body' => $customerName . ' placed a booking.',
+                'order_number' => $booking->order_number,
+                'unseen_count' => $unseenCount,
+            ], now()->addSeconds(30));
             // Notify all admins that have an fcm_token
             Log::info('🔍 BookingObserver::created - Querying admins', [
                 'booking_id' => $booking->id,

@@ -1749,6 +1749,47 @@ To enable notifications, click "View Instructions" below or see the detailed gui
         // Poll unseen notifications as a fallback when FCM isn't available.
         (function() {
             let lastCount = null;
+            let audioUnlocked = false;
+            let audioCtx = null;
+
+            function unlockAudio() {
+                if (audioUnlocked) return;
+                try {
+                    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    audioUnlocked = true;
+                } catch (e) {
+                    console.debug('Audio unlock failed', e);
+                }
+            }
+
+            function playNotificationSound() {
+                try {
+                    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                } catch (e) {
+                    console.debug('Sound blocked or failed', e);
+                }
+            }
+
+            // Try to unlock audio on first user interaction
+            document.addEventListener('click', unlockAudio, { once: true });
+            document.addEventListener('keydown', unlockAudio, { once: true });
             @if (\Illuminate\Support\Facades\Route::has('admin.notifications.unseen'))
                 const endpoint = '{{ route('admin.notifications.unseen') }}';
             @else
@@ -1783,6 +1824,7 @@ To enable notifications, click "View Instructions" below or see the detailed gui
                         try {
                             const title = b.title || ('New Booking ' + (b.order_number ? ('#' + b.order_number) : ''));
                             const body = b.body || 'A new booking was created.';
+                            playNotificationSound();
                             const alertDiv = document.createElement('div');
                             alertDiv.style.cssText = `
                                 position: fixed;
@@ -1817,6 +1859,7 @@ To enable notifications, click "View Instructions" below or see the detailed gui
                         try {
                             const title = 'New Booking #' + (latest.order_number || latest.id);
                             const body = (latest.user_name ? latest.user_name + ' placed a booking.' : 'A new booking was created.');
+                            playNotificationSound();
 
                             // create alert div (same style used by FCM foreground handler)
                             const alertDiv = document.createElement('div');
