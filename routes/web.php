@@ -178,7 +178,8 @@ Route::prefix('admin')->name('admin.')->middleware([\App\Http\Middleware\LogAdmi
     // Render area price table partial (used by admin JS modal)
     Route::get('partials/area-prices', function(Request $request) {
         $base = floatval($request->query('base', 0));
-        return view('dashboard.partials.area_price_table', ['basePrice' => $base])->render();
+        $label = $request->query('label', null);
+        return view('dashboard.partials.area_price_table', ['basePrice' => $base, 'label' => $label])->render();
     })->name('admin.partials.area_prices')->middleware('auth:admin');
     // Provide car timeline data as JSON for sidebar (next 48 hours)
     Route::get('partials/car-timeline-data', [CarTimelineController::class, 'timelineData'])->name('admin.partials.car_timeline_data')->middleware('auth:admin');

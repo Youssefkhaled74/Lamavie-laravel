@@ -30,7 +30,7 @@
             @php($washingPrice = $yourItem->washing_price ?? $yourItem->price)
             @if($washingPrice)
                 <span class="price-pill">{{ number_format($washingPrice, 2) }}</span>
-                <button class="btn btn-sm btn-outline-secondary btn-area-prices ms-2" data-base="{{ $washingPrice }}" type="button">Prices</button>
+                <button class="btn btn-sm btn-outline-secondary btn-area-prices ms-2" data-base="{{ $washingPrice }}" data-label="Washing" type="button">Prices</button>
             @else
                 <span class="text-muted">N/A</span>
             @endif
@@ -38,6 +38,7 @@
         <td class="text-end">
             @if($yourItem->ironing_price)
                 <span class="price-pill">{{ number_format($yourItem->ironing_price, 2) }}</span>
+                <button class="btn btn-sm btn-outline-secondary btn-area-prices ms-2" data-base="{{ $yourItem->ironing_price }}" data-label="Ironing" type="button">Prices</button>
             @else
                 <span class="text-muted">N/A</span>
             @endif

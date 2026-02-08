@@ -5,6 +5,7 @@
      */
     $areas = \App\Models\Area::orderBy('name->en')->get();
     $base = isset($basePrice) ? floatval($basePrice) : 0.0;
+    $label = $label ?? null;
     
     // human friendly formatting helper
     $fmt = function ($v) {
@@ -14,7 +15,13 @@
 
 <div class="card mt-3">
     <div class="card-body">
-        <h5 class="card-title">Adjusted prices by area (base: {{ $fmt($base) }})</h5>
+        <h5 class="card-title">
+            Adjusted prices by area
+            @if($label)
+                ({{ $label }})
+            @endif
+            (base: {{ $fmt($base) }})
+        </h5>
         <div class="table-responsive">
             <table class="table table-sm">
                 <thead>

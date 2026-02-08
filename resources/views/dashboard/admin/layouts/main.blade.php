@@ -1999,10 +1999,12 @@ To enable notifications, click "View Instructions" below or see the detailed gui
                 if (!btn) return;
                 e.preventDefault();
                 const base = btn.dataset.base || btn.getAttribute('data-base') || 0;
+                const label = btn.dataset.label || btn.getAttribute('data-label') || '';
                 const modalBody = document.getElementById('area-prices-modal-body');
                 if (!modalBody) return;
                 modalBody.innerHTML = '<div class="text-center text-muted">Loading…</div>';
-                fetch(areaPricesUrl + '?base=' + encodeURIComponent(base), {
+                const qs = '?base=' + encodeURIComponent(base) + (label ? '&label=' + encodeURIComponent(label) : '');
+                fetch(areaPricesUrl + qs, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
                         }
