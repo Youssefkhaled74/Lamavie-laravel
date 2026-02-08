@@ -40,7 +40,7 @@ class BookingFieldsUpdated extends Notification
             $title = 'Booking updated';
             $messages = $this->buildChangeMessages();
             $summary = implode('; ', array_slice($messages, 0, 3));
-            $body = 'Your booking #' . ($this->booking->order_number ?? $this->booking->id) . ' was updated.' . ($summary ? ' Changes: ' . $summary : '');
+            $body = 'Booking #' . ($this->booking->order_number ?? $this->booking->id) . ' was updated.' . ($summary ? ' Changes: ' . $summary : '');
             $msg = CloudMessage::new()
                 ->withNotification(FirebaseNotification::create($title, $body))
                 ->withData([
@@ -62,7 +62,7 @@ class BookingFieldsUpdated extends Notification
         return [
             'booking_id' => $this->booking->id,
             'order_number' => $this->booking->order_number ?? null,
-            'message' => 'Your booking was updated by admin.',
+            'message' => 'Booking updated.',
             'summary' => $this->buildChangeSummary(),
             'changes' => $this->changes,
             'friendly_messages' => $this->buildChangeMessages(),

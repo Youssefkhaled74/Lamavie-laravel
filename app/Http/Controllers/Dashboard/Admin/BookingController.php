@@ -460,7 +460,7 @@ class BookingController extends Controller
             }
         }
 
-        // If status changed, send notifications as before
+        // If status changed, send notifications as before (user only)
         if (array_key_exists('status', $changed) && $booking->user) {
             $newStatus = $changed['status']['new'];
             $notificationClass = match ($newStatus) {
@@ -471,14 +471,47 @@ class BookingController extends Controller
                 default => null,
             };
             if ($notificationClass) {
-                // Use safe notification wrapper
                 \App\Services\NotificationService::safeNotify($booking->user, new $notificationClass($booking), ['booking_id' => $booking->id]);
             }
         }
 
-        // Send a generic notification to user listing changed fields (if any)
-        if (!empty($changed) && $booking->user) {
-            \App\Services\NotificationService::safeNotify($booking->user, new \App\Notifications\BookingFieldsUpdated($booking, $changed), ['booking_id' => $booking->id]);
+        // Send separate notifications per changed field to all parties (admin + user + driver + lab)
+        if (!empty($changed)) {
+            $booking = $booking->fresh();
+            $booking->load(['user', 'lab', 'driver', 'pickupDriver', 'deliveryDriver']);
+
+            $recipients = [];
+            $addRecipient = function ($model) use (&$recipients) {
+                if (!$model || !isset($model->id)) return;
+                $key = get_class($model) . ':' . $model->id;
+                $recipients[$key] = $model;
+            };
+
+            // Admins (all)
+            foreach (\App\Models\Admin::all() as $adminRecipient) {
+                $addRecipient($adminRecipient);
+            }
+
+            // User + lab + drivers
+            $addRecipient($booking->user ?? null);
+            $addRecipient($booking->lab ?? null);
+            $addRecipient($booking->driver ?? null);
+            $addRecipient($booking->pickupDriver ?? null);
+            $addRecipient($booking->deliveryDriver ?? null);
+
+            foreach ($changed as $field => $vals) {
+                foreach ($recipients as $recipient) {
+                    // Avoid duplicate status notification for user (already sent above)
+                    if ($field === 'status' && $booking->user && get_class($recipient) === get_class($booking->user) && $recipient->id === $booking->user->id) {
+                        continue;
+                    }
+                    \App\Services\NotificationService::safeNotify(
+                        $recipient,
+                        new \App\Notifications\BookingFieldsUpdated($booking, [$field => $vals]),
+                        ['booking_id' => $booking->id, 'field' => $field, 'notifiable' => get_class($recipient)]
+                    );
+                }
+            }
         }
 
         Log::info('Booking update: End, redirecting', ['booking_id' => $booking->id]);
