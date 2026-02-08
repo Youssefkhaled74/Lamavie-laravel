@@ -40,4 +40,12 @@ class Admin extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Route notifications for the Firebase channel.
+     */
+    public function routeNotificationForFirebase()
+    {
+        return $this->fcm_token;
+    }
 }

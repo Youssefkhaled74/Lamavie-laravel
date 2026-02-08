@@ -500,6 +500,13 @@ class BookingController extends Controller
             $addRecipient($booking->deliveryDriver ?? null);
 
             foreach ($changed as $field => $vals) {
+                Log::info('Booking update: notifying field change', [
+                    'booking_id' => $booking->id,
+                    'field' => $field,
+                    'old' => $vals['old'] ?? null,
+                    'new' => $vals['new'] ?? null,
+                    'recipients' => count($recipients),
+                ]);
                 foreach ($recipients as $recipient) {
                     // Avoid duplicate status notification for user (already sent above)
                     if ($field === 'status' && $booking->user && get_class($recipient) === get_class($booking->user) && $recipient->id === $booking->user->id) {
