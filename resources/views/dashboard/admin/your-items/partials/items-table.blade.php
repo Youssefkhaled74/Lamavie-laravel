@@ -12,9 +12,17 @@
             @endif
         </td>
         <td>
-            @if($yourItem->price)
-                {{ number_format($yourItem->price, 2) }}
-                <button class="btn btn-sm btn-outline-secondary btn-area-prices ms-2" data-base="{{ $yourItem->price }}" type="button">Prices</button>
+            @php($washingPrice = $yourItem->washing_price ?? $yourItem->price)
+            @if($washingPrice)
+                {{ number_format($washingPrice, 2) }}
+                <button class="btn btn-sm btn-outline-secondary btn-area-prices ms-2" data-base="{{ $washingPrice }}" type="button">Prices</button>
+            @else
+                N/A
+            @endif
+        </td>
+        <td>
+            @if($yourItem->ironing_price)
+                {{ number_format($yourItem->ironing_price, 2) }}
             @else
                 N/A
             @endif
@@ -37,6 +45,6 @@
     </tr>
 @empty
     <tr>
-        <td colspan="7" class="text-center text-muted">No items found.</td>
+        <td colspan="8" class="text-center text-muted">No items found.</td>
     </tr>
 @endforelse

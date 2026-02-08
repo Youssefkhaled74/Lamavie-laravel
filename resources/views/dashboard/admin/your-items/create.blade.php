@@ -3,7 +3,7 @@
 @section('content')
 <div class="content-header fade-in">
     <h1 class="fw-bold text-primary">Add New Item</h1>
-    <p class="text-muted">Create a new item with multilingual names, associated service category, logo, and price.</p>
+    <p class="text-muted">Create a new item with multilingual names, associated service category, logo, and washing/ironing prices.</p>
 </div>
 
 @if (session('success'))
@@ -70,9 +70,18 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-4 position-relative">
-                        <label for="price" class="form-label fw-semibold">Price</label>
-                        <input type="number" step="0.01" name="price" id="price" class="form-control form-control-lg rounded-3 @error('price') is-invalid @enderror" value="{{ old('price') }}" placeholder="e.g., 50.00">
-                        @error('price')
+                        <label for="washing_price" class="form-label fw-semibold">Washing Price</label>
+                        <input type="number" step="0.01" name="washing_price" id="washing_price" class="form-control form-control-lg rounded-3 @error('washing_price') is-invalid @enderror" value="{{ old('washing_price') }}" placeholder="e.g., 50.00">
+                        @error('washing_price')
+                            <div class="invalid-feedback d-flex align-items-center"><i class="fas fa-exclamation-circle me-2"></i>{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-4 position-relative">
+                        <label for="ironing_price" class="form-label fw-semibold">Ironing Price</label>
+                        <input type="number" step="0.01" name="ironing_price" id="ironing_price" class="form-control form-control-lg rounded-3 @error('ironing_price') is-invalid @enderror" value="{{ old('ironing_price') }}" placeholder="e.g., 30.00">
+                        @error('ironing_price')
                             <div class="invalid-feedback d-flex align-items-center"><i class="fas fa-exclamation-circle me-2"></i>{{ $message }}</div>
                         @enderror
                     </div>

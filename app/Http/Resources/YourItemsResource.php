@@ -34,13 +34,32 @@ class YourItemsResource extends JsonResource
             return $final !== null ? number_format($final, 2) : null;
         };
 
+        $locale = App::getLocale();
+        $priceOptions = [
+            [
+                'key' => 'washing',
+                'label' => $locale === 'ar' ? 'سعر الغسيل' : 'Washing Price',
+            ],
+            [
+                'key' => 'ironing',
+                'label' => $locale === 'ar' ? 'سعر الكي' : 'Ironing Price',
+            ],
+        ];
+
         return [
             'id' => $this->id,
             'name' => $getLocalizedValue($this->name),
             'service_category_id' => $this->service_category_id,
             'service_category_name' => $this->serviceCategory ? $getLocalizedValue($this->serviceCategory->name) : null,
             'logo' => $this->logo ? Storage::url($this->logo) : null,
-            'price' => $adjustPrice($this->price),
+            'price' => $adjustPrice($this->price ?? $this->washing_price),
+            'washing_price' => $adjustPrice($this->washing_price),
+            'ironing_price' => $adjustPrice($this->ironing_price),
+            'prices' => [
+                'washing' => $adjustPrice($this->washing_price),
+                'ironing' => $adjustPrice($this->ironing_price),
+            ],
+            'price_options' => $priceOptions,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

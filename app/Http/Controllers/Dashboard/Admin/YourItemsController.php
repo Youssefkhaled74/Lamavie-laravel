@@ -77,7 +77,8 @@ class YourItemsController extends Controller
             'name_en' => 'required|string|max:255',
             'service_category_id' => 'required|exists:service_categories,id',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'price' => 'nullable|numeric|min:0|max:999999.99',
+            'washing_price' => 'nullable|numeric|min:0|max:999999.99',
+            'ironing_price' => 'nullable|numeric|min:0|max:999999.99',
         ]);
 
         $data = [
@@ -86,7 +87,9 @@ class YourItemsController extends Controller
                 'en' => $request->name_en,
             ],
             'service_category_id' => $request->service_category_id,
-            'price' => $request->price,
+            'washing_price' => $request->washing_price,
+            'ironing_price' => $request->ironing_price,
+            'price' => $request->washing_price ?? $request->ironing_price,
         ];
 
         if ($request->hasFile('logo')) {
@@ -144,7 +147,8 @@ class YourItemsController extends Controller
             'name_en' => 'required|string|max:255',
             'service_category_id' => 'required|exists:service_categories,id',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'price' => 'nullable|numeric|min:0|max:999999.99',
+            'washing_price' => 'nullable|numeric|min:0|max:999999.99',
+            'ironing_price' => 'nullable|numeric|min:0|max:999999.99',
         ]);
 
         $data = [
@@ -153,7 +157,9 @@ class YourItemsController extends Controller
                 'en' => $request->name_en,
             ],
             'service_category_id' => $request->service_category_id,
-            'price' => $request->price,
+            'washing_price' => $request->washing_price,
+            'ironing_price' => $request->ironing_price,
+            'price' => $request->washing_price ?? $request->ironing_price,
         ];
 
         if ($request->hasFile('logo')) {

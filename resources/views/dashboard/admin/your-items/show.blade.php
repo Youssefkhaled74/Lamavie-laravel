@@ -56,8 +56,14 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="mb-4">
-                    <h6 class="fw-semibold text-muted">Price</h6>
-                    <p>{{ $yourItem->price ? number_format($yourItem->price, 2) : 'N/A' }}</p>
+                    <h6 class="fw-semibold text-muted">Washing Price</h6>
+                    <p>{{ ($yourItem->washing_price ?? $yourItem->price) ? number_format($yourItem->washing_price ?? $yourItem->price, 2) : 'N/A' }}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <h6 class="fw-semibold text-muted">Ironing Price</h6>
+                    <p>{{ $yourItem->ironing_price ? number_format($yourItem->ironing_price, 2) : 'N/A' }}</p>
                 </div>
             </div>
         </div>

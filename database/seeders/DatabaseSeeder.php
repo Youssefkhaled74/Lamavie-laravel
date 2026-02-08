@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             LabsSeeder::class,
             BookingsSeeder::class,
             \Database\Seeders\UserUniqueCodeSeeder::class,
+            YourItemsPricingSeeder::class,
         ]);
     }
 }

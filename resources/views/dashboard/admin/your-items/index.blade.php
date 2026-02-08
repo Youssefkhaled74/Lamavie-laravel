@@ -39,7 +39,8 @@
                         <th>Name (Arabic)</th>
                         <th>Service Category</th>
                         <th>Logo</th>
-                        <th>Price</th>
+                        <th>Washing Price</th>
+                        <th>Ironing Price</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -106,7 +107,7 @@
             })
             .catch(error => {
                 console.error('Error loading items:', error);
-                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Error loading items.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Error loading items.</td></tr>';
             });
         }
 

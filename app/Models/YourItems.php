@@ -8,7 +8,7 @@ class YourItems extends Model
 {
     protected $table = 'your_items';
 
-    protected $fillable = ['name', 'service_category_id', 'logo', 'price'];
+    protected $fillable = ['name', 'service_category_id', 'logo', 'price', 'washing_price', 'ironing_price'];
 
     protected $casts = [
         'name' => 'array',
