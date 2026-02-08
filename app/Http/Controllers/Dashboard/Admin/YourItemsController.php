@@ -37,12 +37,30 @@ class YourItemsController extends Controller
             $query->where('service_category_id', $request->service_category_id);
         }
 
+        if ($request->filled('q')) {
+            $term = trim($request->q);
+            $query->where(function ($sub) use ($term) {
+                $like = '%' . $term . '%';
+                $sub->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) LIKE ?", [$like])
+                    ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) LIKE ?", [$like]);
+            });
+        }
+
         $yourItems = $query->paginate(15);
 
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('dashboard.admin.your-items.partials.items-table', compact('yourItems'))->render(),
-                'pagination' => $yourItems->appends(['service_category_id' => $request->service_category_id])->links('vendor.pagination.bootstrap-5')->toHtml(),
+                'pagination' => $yourItems->appends([
+                    'service_category_id' => $request->service_category_id,
+                    'q' => $request->q,
+                ])->links('vendor.pagination.bootstrap-5')->toHtml(),
+                'meta' => [
+                    'total' => $yourItems->total(),
+                    'count' => $yourItems->count(),
+                    'from' => $yourItems->firstItem(),
+                    'to' => $yourItems->lastItem(),
+                ],
             ]);
         }
 

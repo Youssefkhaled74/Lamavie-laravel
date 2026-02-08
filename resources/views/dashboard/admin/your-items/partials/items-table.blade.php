@@ -1,43 +1,55 @@
 @forelse ($yourItems as $yourItem)
     <tr class="fade-in">
         <td>{{ $loop->iteration + ($yourItems->firstItem() - 1) }}</td>
-        <td>{{ $yourItem->name['en'] }}</td>
-        <td>{{ $yourItem->name['ar'] }}</td>
-        <td>{{ $yourItem->serviceCategory ? $yourItem->serviceCategory->name['en'] : 'N/A' }}</td>
+        <td>
+            <div class="fw-semibold text-dark">{{ $yourItem->name['en'] ?? 'N/A' }}</div>
+            <div class="text-muted small">{{ $yourItem->name['ar'] ?? 'N/A' }}</div>
+        </td>
+        <td>
+            @if($yourItem->serviceCategory)
+                <span class="badge-soft">{{ $yourItem->serviceCategory->name['en'] ?? 'N/A' }}</span>
+            @else
+                <span class="text-muted">N/A</span>
+            @endif
+        </td>
         <td>
             @if ($yourItem->logo)
-                <img src="{{ Storage::url($yourItem->logo) }}" alt="{{ $yourItem->name['en'] }}" style="max-width: 50px; max-height: 50px;">
+                <span class="logo-frame">
+                    <img src="{{ Storage::url($yourItem->logo) }}" alt="{{ $yourItem->name['en'] }}">
+                </span>
             @else
-                N/A
+                <span class="logo-frame text-muted fw-semibold">
+                    {{ strtoupper(substr($yourItem->name['en'] ?? $yourItem->name['ar'] ?? 'N', 0, 1)) }}
+                </span>
             @endif
         </td>
-        <td>
+        <td class="text-end">
             @php($washingPrice = $yourItem->washing_price ?? $yourItem->price)
             @if($washingPrice)
-                {{ number_format($washingPrice, 2) }}
+                <span class="price-pill">{{ number_format($washingPrice, 2) }}</span>
                 <button class="btn btn-sm btn-outline-secondary btn-area-prices ms-2" data-base="{{ $washingPrice }}" type="button">Prices</button>
             @else
-                N/A
+                <span class="text-muted">N/A</span>
             @endif
         </td>
-        <td>
+        <td class="text-end">
             @if($yourItem->ironing_price)
-                {{ number_format($yourItem->ironing_price, 2) }}
+                <span class="price-pill">{{ number_format($yourItem->ironing_price, 2) }}</span>
             @else
-                N/A
+                <span class="text-muted">N/A</span>
             @endif
         </td>
-        <td>
-            <a href="{{ route('admin.your-items.show', $yourItem) }}" class="btn btn-sm btn-info me-1">
+        <td class="text-end action-group">
+            <a href="{{ route('admin.your-items.show', $yourItem) }}" class="btn btn-sm btn-outline-info me-1" title="View">
                 <i class="fas fa-eye"></i>
             </a>
-            <a href="{{ route('admin.your-items.edit', $yourItem) }}" class="btn btn-sm btn-warning me-1">
+            <a href="{{ route('admin.your-items.edit', $yourItem) }}" class="btn btn-sm btn-outline-warning me-1" title="Edit">
                 <i class="fas fa-edit"></i>
             </a>
             <form action="{{ route('admin.your-items.destroy', $yourItem) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this item?');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-sm btn-danger">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
                     <i class="fas fa-trash"></i>
                 </button>
             </form>
@@ -45,6 +57,6 @@
     </tr>
 @empty
     <tr>
-        <td colspan="8" class="text-center text-muted">No items found.</td>
+        <td colspan="7" class="text-center text-muted">No items found.</td>
     </tr>
 @endforelse
