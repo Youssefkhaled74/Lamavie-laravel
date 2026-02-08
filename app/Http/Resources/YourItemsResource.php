@@ -46,6 +46,15 @@ class YourItemsResource extends JsonResource
             ],
         ];
 
+        $priceKey = $request->query('price_key', null);
+        $priceKey = in_array($priceKey, ['washing', 'ironing'], true) ? $priceKey : null;
+        $selectedPrice = null;
+        if ($priceKey === 'washing') {
+            $selectedPrice = $adjustPrice($this->washing_price);
+        } elseif ($priceKey === 'ironing') {
+            $selectedPrice = $adjustPrice($this->ironing_price);
+        }
+
         return [
             'id' => $this->id,
             'name' => $getLocalizedValue($this->name),
@@ -59,6 +68,8 @@ class YourItemsResource extends JsonResource
                 'washing' => $adjustPrice($this->washing_price),
                 'ironing' => $adjustPrice($this->ironing_price),
             ],
+            'selected_price_key' => $priceKey,
+            'selected_price' => $selectedPrice,
             'price_options' => $priceOptions,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

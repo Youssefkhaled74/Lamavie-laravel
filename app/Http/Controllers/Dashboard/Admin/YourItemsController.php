@@ -214,12 +214,17 @@ class YourItemsController extends Controller
      */
     public function bulkDestroy(Request $request)
     {
+        $ids = $request->input('ids', []);
+        if (is_string($ids)) {
+            $decoded = json_decode($ids, true);
+            $ids = is_array($decoded) ? $decoded : [];
+        }
+
+        $request->merge(['ids' => $ids]);
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'integer|exists:your_items,id',
         ]);
-
-        $ids = $request->input('ids', []);
         $items = YourItems::whereIn('id', $ids)->get();
         foreach ($items as $item) {
             if ($item->logo) {
@@ -237,6 +242,10 @@ class YourItemsController extends Controller
     public function export(Request $request)
     {
         $ids = $request->input('ids', []);
+        if (is_string($ids)) {
+            $decoded = json_decode($ids, true);
+            $ids = is_array($decoded) ? $decoded : [];
+        }
         $query = YourItems::with('serviceCategory');
         if (is_array($ids) && count($ids) > 0) {
             $query->whereIn('id', $ids);

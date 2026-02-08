@@ -1,5 +1,8 @@
 @forelse ($yourItems as $yourItem)
     <tr class="fade-in">
+        <td>
+            <input type="checkbox" class="row-select" value="{{ $yourItem->id }}">
+        </td>
         <td>{{ $loop->iteration + ($yourItems->firstItem() - 1) }}</td>
         <td>
             <div class="fw-semibold text-dark">{{ $yourItem->name['en'] ?? 'N/A' }}</div>
@@ -57,6 +60,6 @@
     </tr>
 @empty
     <tr>
-        <td colspan="7" class="text-center text-muted">No items found.</td>
+        <td colspan="8" class="text-center text-muted" data-en="No items found." data-ar="لا توجد عناصر.">No items found.</td>
     </tr>
 @endforelse

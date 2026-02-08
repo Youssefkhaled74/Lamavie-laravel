@@ -4,12 +4,12 @@
 <div class="content-header fade-in">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div>
-            <h1 class="fw-bold text-primary mb-1">Your Items</h1>
-            <p class="text-muted mb-0">Manage items, prices, and categories with faster search and filters.</p>
+            <h1 class="fw-bold text-primary mb-1" data-en="Your Items" data-ar="عناصر المستخدم">Your Items</h1>
+            <p class="text-muted mb-0" data-en="Manage items, prices, and categories with faster search and filters." data-ar="إدارة العناصر والأسعار والفئات مع بحث وفلاتر أسرع.">Manage items, prices, and categories with faster search and filters.</p>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('admin.your-items.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Add New Item
+                <i class="fas fa-plus me-2"></i><span data-en="Add New Item" data-ar="إضافة عنصر جديد">Add New Item</span>
             </a>
         </div>
     </div>
@@ -25,19 +25,19 @@
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="stat-card">
-            <div class="stat-label">Total Items</div>
+            <div class="stat-label" data-en="Total Items" data-ar="إجمالي العناصر">Total Items</div>
             <div class="stat-value" id="stat-total">{{ $yourItems->total() }}</div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card">
-            <div class="stat-label">Visible Items</div>
+            <div class="stat-label" data-en="Visible Items" data-ar="العناصر المعروضة">Visible Items</div>
             <div class="stat-value" id="stat-count">{{ $yourItems->count() }}</div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card">
-            <div class="stat-label">Categories</div>
+            <div class="stat-label" data-en="Categories" data-ar="الفئات">Categories</div>
             <div class="stat-value">{{ $serviceCategories->count() }}</div>
         </div>
     </div>
@@ -47,31 +47,44 @@
     <div class="card-body p-4">
         <div class="filters-bar">
             <div class="filter-item">
-                <label for="service_category_id" class="form-label fw-semibold">Category</label>
+                <label for="service_category_id" class="form-label fw-semibold" data-en="Category" data-ar="الفئة">Category</label>
                 <select id="service_category_id" class="form-select form-select-lg rounded-3">
-                    <option value="" selected>All Categories</option>
+                    <option value="" selected data-en="All Categories" data-ar="كل الفئات">All Categories</option>
                     @foreach ($serviceCategories as $serviceCategory)
                         <option value="{{ $serviceCategory->id }}">{{ $serviceCategory->name['en'] }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="filter-item flex-grow-1">
-                <label for="items-search" class="form-label fw-semibold">Search</label>
+                <label for="items-search" class="form-label fw-semibold" data-en="Search" data-ar="بحث">Search</label>
                 <div class="input-group input-group-lg">
                     <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                    <input type="text" id="items-search" class="form-control" placeholder="Search by English or Arabic name" value="{{ request('q') }}">
+                    <input type="text" id="items-search" class="form-control" placeholder="Search by English or Arabic name" value="{{ request('q') }}" data-en-placeholder="Search by English or Arabic name" data-ar-placeholder="ابحث بالاسم الإنجليزي أو العربي">
                 </div>
             </div>
             <div class="filter-item filter-actions">
                 <label class="form-label fw-semibold d-none d-md-block">&nbsp;</label>
                 <div class="d-flex gap-2">
                     <button type="button" id="clear-filters" class="btn btn-outline-secondary btn-lg">
-                        <i class="fas fa-times me-2"></i>Clear
+                        <i class="fas fa-times me-2"></i><span data-en="Clear" data-ar="مسح">Clear</span>
+                    </button>
+                    <button type="button" id="export-items" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-download me-2"></i><span data-en="Export" data-ar="تصدير">Export</span>
+                    </button>
+                    <button type="button" id="bulk-delete" class="btn btn-outline-danger btn-lg">
+                        <i class="fas fa-trash me-2"></i><span data-en="Delete Selected" data-ar="حذف المحدد">Delete Selected</span>
                     </button>
                     <a href="{{ route('admin.your-items.create') }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-plus me-2"></i>Add
+                        <i class="fas fa-plus me-2"></i><span data-en="Add" data-ar="إضافة">Add</span>
                     </a>
                 </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="text-muted small">
+                <span data-en="Selected:" data-ar="المحدد:">Selected:</span>
+                <strong id="selected-count">0</strong>
             </div>
         </div>
 
@@ -79,13 +92,16 @@
             <table class="table table-hover align-middle table-modern">
                 <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" id="select-all">
+                        </th>
                         <th>#</th>
-                        <th>Item</th>
-                        <th>Category</th>
-                        <th>Logo</th>
-                        <th class="text-end">Washing</th>
-                        <th class="text-end">Ironing</th>
-                        <th class="text-end">Actions</th>
+                        <th data-en="Item" data-ar="العنصر">Item</th>
+                        <th data-en="Category" data-ar="الفئة">Category</th>
+                        <th data-en="Logo" data-ar="الشعار">Logo</th>
+                        <th class="text-end" data-en="Washing" data-ar="الغسيل">Washing</th>
+                        <th class="text-end" data-en="Ironing" data-ar="الكي">Ironing</th>
+                        <th class="text-end" data-en="Actions" data-ar="الإجراءات">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="items-table-body">
@@ -95,7 +111,10 @@
         </div>
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" id="pagination-links">
             <div class="text-muted small" id="range-text">
-                Showing {{ $yourItems->firstItem() ?? 0 }} - {{ $yourItems->lastItem() ?? 0 }} of {{ $yourItems->total() }}
+                <span data-en="Showing" data-ar="عرض">Showing</span>
+                {{ $yourItems->firstItem() ?? 0 }} - {{ $yourItems->lastItem() ?? 0 }}
+                <span data-en="of" data-ar="من">of</span>
+                {{ $yourItems->total() }}
             </div>
             <div id="pagination-container">
                 {{ $yourItems->appends(['service_category_id' => request()->service_category_id, 'q' => request('q')])->links('vendor.pagination.bootstrap-5') }}
@@ -103,6 +122,15 @@
         </div>
     </div>
 </div>
+
+<form id="bulk-delete-form" method="POST" action="{{ route('admin.your-items.bulk-destroy') }}" class="d-none">
+    @csrf
+    <input type="hidden" name="ids" id="bulk-delete-ids">
+</form>
+<form id="export-form" method="POST" action="{{ route('admin.your-items.export') }}" class="d-none">
+    @csrf
+    <input type="hidden" name="ids" id="export-ids">
+</form>
 @endsection
 
 @section('scripts')
@@ -240,6 +268,14 @@
         const categorySelect = document.getElementById('service_category_id');
         const searchInput = document.getElementById('items-search');
         const clearFiltersBtn = document.getElementById('clear-filters');
+        const exportBtn = document.getElementById('export-items');
+        const bulkDeleteBtn = document.getElementById('bulk-delete');
+        const selectAll = document.getElementById('select-all');
+        const selectedCount = document.getElementById('selected-count');
+        const bulkDeleteIds = document.getElementById('bulk-delete-ids');
+        const exportIds = document.getElementById('export-ids');
+        const bulkDeleteForm = document.getElementById('bulk-delete-form');
+        const exportForm = document.getElementById('export-form');
         const tableBody = document.getElementById('items-table-body');
         const paginationLinks = document.getElementById('pagination-links');
         const paginationContainer = document.getElementById('pagination-container');
@@ -283,10 +319,11 @@
                 }
                 
                 attachPaginationListeners();
+                attachRowCheckboxes();
             })
             .catch(error => {
                 console.error('Error loading items:', error);
-                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Error loading items.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Error loading items.</td></tr>';
             });
         }
 
@@ -300,6 +337,41 @@
                     loadItems(categorySelect.value, page, searchInput.value.trim());
                 });
             });
+        }
+
+        function getSelectedIds() {
+            return Array.from(document.querySelectorAll('.row-select:checked')).map(el => el.value);
+        }
+
+        function applyPlaceholders() {
+            const lang = document.documentElement.getAttribute('lang') || 'en';
+            document.querySelectorAll('[data-en-placeholder]').forEach(el => {
+                el.setAttribute('placeholder', lang === 'ar' ? el.getAttribute('data-ar-placeholder') : el.getAttribute('data-en-placeholder'));
+            });
+        }
+
+        function getLang() {
+            return (document.documentElement.getAttribute('lang') || 'en').toLowerCase();
+        }
+
+        function t(en, ar) {
+            return getLang() === 'ar' ? ar : en;
+        }
+
+        function updateSelectedCount() {
+            const ids = getSelectedIds();
+            selectedCount.textContent = ids.length;
+            if (selectAll) {
+                const all = document.querySelectorAll('.row-select');
+                selectAll.checked = all.length > 0 && ids.length === all.length;
+            }
+        }
+
+        function attachRowCheckboxes() {
+            document.querySelectorAll('.row-select').forEach(cb => {
+                cb.addEventListener('change', updateSelectedCount);
+            });
+            updateSelectedCount();
         }
 
         // Load items when category changes
@@ -324,8 +396,36 @@
             loadItems('', 1, '');
         });
 
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                document.querySelectorAll('.row-select').forEach(cb => {
+                    cb.checked = selectAll.checked;
+                });
+                updateSelectedCount();
+            });
+        }
+
+        exportBtn.addEventListener('click', function () {
+            const ids = getSelectedIds();
+            exportIds.value = JSON.stringify(ids);
+            exportForm.submit();
+        });
+
+        bulkDeleteBtn.addEventListener('click', function () {
+            const ids = getSelectedIds();
+            if (ids.length === 0) {
+                alert(t('Please select items to delete.', 'يرجى تحديد عناصر للحذف.'));
+                return;
+            }
+            if (!confirm(t('Are you sure you want to delete selected items?', 'هل أنت متأكد من حذف العناصر المحددة؟'))) return;
+            bulkDeleteIds.value = JSON.stringify(ids);
+            bulkDeleteForm.submit();
+        });
+
         // Initial load: keep server-rendered pagination working
         attachPaginationListeners();
+        attachRowCheckboxes();
+        applyPlaceholders();
 
         // Animation for table rows
         document.querySelectorAll('.fade-in').forEach(element => {
