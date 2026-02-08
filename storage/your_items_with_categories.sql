@@ -1,0 +1,116 @@
+SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';
+START TRANSACTION;
+SET time_zone = '+00:00';
+/*!40101 SET NAMES utf8mb4 */;
+
+-- pick a service id (Laundry/Dry Clean or first service)
+SET @service_id = (
+  SELECT id FROM services
+  WHERE name = 'Laundry' OR name = 'Dry Clean'
+  LIMIT 1
+);
+SET @service_id = IFNULL(@service_id, (SELECT id FROM services ORDER BY id ASC LIMIT 1));
+
+-- ensure categories exist
+INSERT INTO service_categories (name, logo, service_id, created_at, updated_at)
+SELECT '{"ar":"ملابس وأقمشة","en":"Clothing & Textiles"}', NULL, @service_id, NOW(), NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM service_categories
+  WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles'
+     OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة'
+);
+INSERT INTO service_categories (name, logo, service_id, created_at, updated_at)
+SELECT '{"ar":"شنط وأحذية","en":"Bags & Shoes"}', NULL, @service_id, NOW(), NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM service_categories
+  WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Bags & Shoes'
+     OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'شنط وأحذية'
+);
+INSERT INTO service_categories (name, logo, service_id, created_at, updated_at)
+SELECT '{"ar":"سجاد","en":"Carpets"}', NULL, @service_id, NOW(), NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM service_categories
+  WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Carpets'
+     OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'سجاد'
+);
+INSERT INTO service_categories (name, logo, service_id, created_at, updated_at)
+SELECT '{"ar":"ستائر","en":"Curtains"}', NULL, @service_id, NOW(), NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM service_categories
+  WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Curtains'
+     OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ستائر'
+);
+
+-- clear and insert items
+DELETE FROM your_items;
+
+INSERT INTO your_items (name, logo, service_category_id, price, washing_price, ironing_price, created_at, updated_at) VALUES
+('{"ar":"قميص كتان","en":"LINEN Shirt"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 55.00, 55.00, 33.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"قميص","en":"Shirt"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 50.00, 50.00, 30.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"تي شيرت","en":"T-Shirt"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 55.00, 55.00, 33.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بلوزة","en":"Blouse"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 60.00, 60.00, 36.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"هودي","en":"Hoodie"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 100.00, 100.00, 60.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"سويت شيرت","en":"Sweatshirt"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 100.00, 100.00, 60.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بنطلون بدلة","en":"Suit Pants"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 120.00, 120.00, 72.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بدلة جلد","en":"Leather Suit"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بنطلون","en":"Pants"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 55.00, 55.00, 33.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شورت","en":"Shorts"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 40.00, 40.00, 24.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جيبة جلد","en":"Leather Skirt"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جيبة","en":"Skirt"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 80.00, 80.00, 48.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بدلة","en":"Suit"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 280.00, 280.00, 168.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت بدلة","en":"Suit Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 160.00, 160.00, 96.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"فيست","en":"Vest"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 80.00, 80.00, 48.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"فستان","en":"Dress"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 180.00, 180.00, 108.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"فستان كاجوال","en":"Casual Dress"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"فستان سهرة","en":"Dress Soiree"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 250.00, 250.00, 150.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جمبسوت","en":"Jumpsuit"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 120.00, 120.00, 72.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت صوف","en":"Wool Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 200.00, 200.00, 120.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت جلد طبيعي","en":"Natural Leather Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 700.00, 700.00, 420.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت بومبر","en":"Bomber Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 350.00, 350.00, 210.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت عادي","en":"Normal Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 160.00, 160.00, 96.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"عباية عادية","en":"Abaya Normal"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"عباية صوف","en":"Abaya WOOL"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 180.00, 180.00, 108.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"معطف صوف","en":"COAT WOOL"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 260.00, 260.00, 156.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"معطف","en":"Coat"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 180.00, 180.00, 108.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت فرو","en":"Fur Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 350.00, 350.00, 210.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بلوفر","en":"Sweater"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 160.00, 160.00, 96.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"تونيك","en":"Tonic"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 65.00, 65.00, 39.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"كاب","en":"Cape"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 50.00, 50.00, 30.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"زي جراحة","en":"Surgery Suit"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 90.00, 90.00, 54.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"فستان زفاف","en":"Wedding Dress"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 800.00, 800.00, 480.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت جلد","en":"Leather Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 350.00, 350.00, 210.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جاكيت شمواه","en":"SHAMWAH Jacket"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 350.00, 350.00, 210.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"تريكو خفيف","en":"Light Knitwear"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 120.00, 120.00, 72.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"تريكو ثقيل","en":"Heavy Knitwear"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 180.00, 180.00, 108.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بلوفر","en":"Pullover"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 100.00, 100.00, 60.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"كارديجان طويل","en":"Long Cardigan"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 250.00, 250.00, 150.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"كارديجان","en":"Cardigan"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 200.00, 200.00, 120.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"ربطة عنق","en":"Tie"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 25.00, 25.00, 15.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شال","en":"Scarf"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 30.00, 30.00, 18.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"باشمينا","en":"Pashmina"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 100.00, 100.00, 60.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شال صوف","en":"Shawl"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 80.00, 80.00, 48.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بيجاما","en":"Pijama"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 120.00, 120.00, 72.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جلابية","en":"Galabiya"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 100.00, 100.00, 60.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بدلة رياضية","en":"Training Suit"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شرابات","en":"Socks"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 15.00, 15.00, 9.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"ملابس داخلية رجالي","en":"Under Wear Men"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 15.00, 15.00, 9.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"ملابس داخلية حريمي","en":"Under Wear Women"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 15.00, 15.00, 9.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"بدلة غطس","en":"Diving Suit"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"ملابس سباحة","en":"Swim Wear"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 50.00, 50.00, 30.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"حزام","en":"Belt"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 25.00, 25.00, 0.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"جوانتي","en":"Gloves"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Clothing & Textiles' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ملابس وأقمشة' LIMIT 1), 15.00, 15.00, 9.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شنطة جلد","en":"Leather Bag"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Bags & Shoes' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'شنط وأحذية' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شنطة رياضية","en":"Sport Bag"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Bags & Shoes' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'شنط وأحذية' LIMIT 1), 150.00, 150.00, 90.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شنطة مدرسة","en":"School Bag"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Bags & Shoes' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'شنط وأحذية' LIMIT 1), 100.00, 100.00, 60.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شنطة حريمي","en":"Lady Bag"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Bags & Shoes' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'شنط وأحذية' LIMIT 1), 100.00, 100.00, 60.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"شنطة سفر","en":"Luggage Bag"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Bags & Shoes' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'شنط وأحذية' LIMIT 1), 200.00, 200.00, 120.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"مقلمة","en":"Pencil Case"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Bags & Shoes' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'شنط وأحذية' LIMIT 1), 20.00, 20.00, 12.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"سجاد يدوي وأنتيك","en":"Hand Made & Antique Carpet"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Carpets' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'سجاد' LIMIT 1), 60.00, 60.00, 36.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"سجاد شنواه","en":"Hand Made – Shnwah"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Carpets' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'سجاد' LIMIT 1), 55.00, 55.00, 33.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"سجاد كاشان","en":"Hand Made – Kashan"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Carpets' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'سجاد' LIMIT 1), 55.00, 55.00, 33.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"سجاد أصفهان","en":"Hand Made – Asfahan"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Carpets' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'سجاد' LIMIT 1), 55.00, 55.00, 33.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"سجاد صوف وحرير","en":"Hand Made – Wool & Silk"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Carpets' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'سجاد' LIMIT 1), 55.00, 55.00, 33.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"سجاد كيليم","en":"Kilim – Silk – Shag – Hand"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Carpets' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'سجاد' LIMIT 1), 45.00, 45.00, 27.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"ستارة ثقيلة","en":"Curtain HEAVY"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Curtains' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ستائر' LIMIT 1), 45.00, 45.00, 27.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50'),
+('{"ar":"ستارة خفيفة","en":"Curtain LIGHT"}', NULL, (SELECT id FROM service_categories WHERE JSON_UNQUOTE(JSON_EXTRACT(name, '$.en')) = 'Curtains' OR JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar')) = 'ستائر' LIMIT 1), 25.00, 25.00, 15.00, '2026-02-08 11:30:50', '2026-02-08 11:30:50');
+COMMIT;

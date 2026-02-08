@@ -8,6 +8,7 @@ use App\Models\YourItems;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 class YourItemsController extends Controller
 {
@@ -206,5 +207,68 @@ class YourItemsController extends Controller
 
         $yourItem->delete();
         return redirect()->route('admin.your-items.index')->with('success', 'Item deleted successfully.');
+    }
+
+    /**
+     * Bulk delete items.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:your_items,id',
+        ]);
+
+        $ids = $request->input('ids', []);
+        $items = YourItems::whereIn('id', $ids)->get();
+        foreach ($items as $item) {
+            if ($item->logo) {
+                Storage::disk('public')->delete($item->logo);
+            }
+        }
+        YourItems::whereIn('id', $ids)->delete();
+
+        return redirect()->route('admin.your-items.index')->with('success', 'Items deleted successfully.');
+    }
+
+    /**
+     * Export items as CSV.
+     */
+    public function export(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $query = YourItems::with('serviceCategory');
+        if (is_array($ids) && count($ids) > 0) {
+            $query->whereIn('id', $ids);
+        }
+        $items = $query->get();
+
+        $filename = 'your_items_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        $callback = function () use ($items) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['ID', 'Name (EN)', 'Name (AR)', 'Category (EN)', 'Category (AR)', 'Washing Price', 'Ironing Price', 'Created At']);
+            foreach ($items as $item) {
+                $nameEn = is_array($item->name) ? ($item->name['en'] ?? '') : $item->name;
+                $nameAr = is_array($item->name) ? ($item->name['ar'] ?? '') : '';
+                $catEn = $item->serviceCategory && is_array($item->serviceCategory->name) ? ($item->serviceCategory->name['en'] ?? '') : '';
+                $catAr = $item->serviceCategory && is_array($item->serviceCategory->name) ? ($item->serviceCategory->name['ar'] ?? '') : '';
+                fputcsv($out, [
+                    $item->id,
+                    $nameEn,
+                    $nameAr,
+                    $catEn,
+                    $catAr,
+                    $item->washing_price ?? $item->price,
+                    $item->ironing_price,
+                    $item->created_at,
+                ]);
+            }
+            fclose($out);
+        };
+
+        return Response::streamDownload($callback, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 }

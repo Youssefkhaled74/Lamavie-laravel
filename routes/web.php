@@ -127,6 +127,8 @@ Route::prefix('admin')->name('admin.')->middleware([\App\Http\Middleware\LogAdmi
     Route::resource('service-categories', ServiceCategoryController::class)->middleware('auth:admin');
     Route::resource('areas', AreaController::class)->middleware('auth:admin');
     Route::resource('your-items', YourItemsController::class)->middleware('auth:admin');
+    Route::post('your-items/bulk-delete', [YourItemsController::class, 'bulkDestroy'])->name('your-items.bulk-destroy')->middleware('auth:admin');
+    Route::post('your-items/export', [YourItemsController::class, 'export'])->name('your-items.export')->middleware('auth:admin');
     // Define specific routes BEFORE the resource route to avoid shadowing by bookings/{booking}
     Route::get('bookings/trashed', [BookingController::class, 'trashed'])->name('bookings.trashed');
     Route::get('bookings/export', [BookingController::class, 'export'])->name('bookings.export')->middleware(['auth:admin','permission:bookings.export']);

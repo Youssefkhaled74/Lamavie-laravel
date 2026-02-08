@@ -246,6 +246,7 @@
         const statTotal = document.getElementById('stat-total');
         const statCount = document.getElementById('stat-count');
         const rangeText = document.getElementById('range-text');
+        let useAjaxPagination = false;
         let searchTimer = null;
 
         function loadItems(serviceCategoryId = '', page = 1, query = '') {
@@ -281,15 +282,7 @@
                     rangeText.textContent = `Showing ${from} - ${to} of ${total}`;
                 }
                 
-                // Reattach pagination event listeners
-                document.querySelectorAll('#pagination-links a').forEach(link => {
-                    link.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const url = new URL(this.href);
-                        const page = url.searchParams.get('page') || 1;
-                        loadItems(categorySelect.value, page, searchInput.value.trim());
-                    });
-                });
+                attachPaginationListeners();
             })
             .catch(error => {
                 console.error('Error loading items:', error);
@@ -297,8 +290,21 @@
             });
         }
 
+        function attachPaginationListeners() {
+            if (!useAjaxPagination) return;
+            document.querySelectorAll('#pagination-links a').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const url = new URL(this.href);
+                    const page = url.searchParams.get('page') || 1;
+                    loadItems(categorySelect.value, page, searchInput.value.trim());
+                });
+            });
+        }
+
         // Load items when category changes
         categorySelect.addEventListener('change', function () {
+            useAjaxPagination = true;
             loadItems(this.value, 1, searchInput.value.trim());
         });
 
@@ -306,6 +312,7 @@
         searchInput.addEventListener('input', function () {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(() => {
+                useAjaxPagination = true;
                 loadItems(categorySelect.value, 1, searchInput.value.trim());
             }, 350);
         });
@@ -313,11 +320,12 @@
         clearFiltersBtn.addEventListener('click', function () {
             categorySelect.value = '';
             searchInput.value = '';
+            useAjaxPagination = true;
             loadItems('', 1, '');
         });
 
-        // Initial load
-        loadItems(categorySelect.value, 1, searchInput.value.trim());
+        // Initial load: keep server-rendered pagination working
+        attachPaginationListeners();
 
         // Animation for table rows
         document.querySelectorAll('.fade-in').forEach(element => {
