@@ -21,6 +21,8 @@ class BookingUpdateRequest extends FormRequest
             'lab_id' => 'nullable|exists:labs,id',
             'pickup_date' => 'nullable|date',
             'pickup_time' => 'nullable|string',
+            'delivery_date' => 'nullable|date',
+            'delivery_time' => 'nullable|string',
             'pickup_location' => 'nullable|string',
             'delivery_location' => 'nullable|string',
             'total' => 'nullable|numeric|between:0,99999999.99',

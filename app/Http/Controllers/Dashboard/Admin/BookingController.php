@@ -207,7 +207,7 @@ class BookingController extends Controller
 
         // Allowed fields for admin updates
         $allowed = [
-            'status', 'driver_id', 'pickup_driver_id', 'delivery_driver_id', 'lab_id', 'pickup_date', 'pickup_time', 'pickup_location', 'delivery_location',
+            'status', 'driver_id', 'pickup_driver_id', 'delivery_driver_id', 'lab_id', 'pickup_date', 'pickup_time', 'delivery_date', 'delivery_time', 'pickup_location', 'delivery_location',
             'total', 'payment_method_id', 'notes'
         ];
 
@@ -222,6 +222,8 @@ class BookingController extends Controller
             'lab_id' => 'nullable|exists:labs,id',
             'pickup_date' => 'nullable|date',
             'pickup_time' => 'nullable|string',
+            'delivery_date' => 'nullable|date',
+            'delivery_time' => 'nullable|string',
             'pickup_location' => 'nullable|string',
             'delivery_location' => 'nullable|string',
             // decimal(10,2) max is 99,999,999.99 - prevent out-of-range values being written
