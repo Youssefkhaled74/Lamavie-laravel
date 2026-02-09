@@ -33,7 +33,7 @@ class BookingController extends Controller
      */
     public function create(Request $request)
     {
-        Log::info('📥 BookingController::create - Request received', [
+        Log::info('BookingController::create - Request received', [
             'user_id' => auth()->id(),
             'service_id' => $request->service_id,
             'payment_method_id' => $request->payment_method_id,
@@ -49,7 +49,7 @@ class BookingController extends Controller
 
         // Check if user is authenticated
         if (!auth()->check()) {
-            Log::warning('❌ BookingController::create - Unauthenticated', [
+            Log::warning('BookingController::create - Unauthenticated', [
                 'ip' => $request->ip(),
             ]);
             return $this->errorResponse(
@@ -58,18 +58,34 @@ class BookingController extends Controller
             );
         }
 
+        $servicesData = $request->input('services_data');
+        $hasMultiple = is_array($servicesData) && count($servicesData) > 0;
+
         // Validate the request
-        $validator = Validator::make($request->all(), [
-            'service_id' => 'required|exists:services,id',
-            'service_category_id' => 'required|exists:service_categories,id',
-            'service_type_id' => 'nullable|exists:service_types,id',
-            'payload_data' => 'required|array',
+        $baseRules = [
             'payment_method_id' => 'required|exists:payments_method,id',
             'total' => 'nullable|numeric|min:0',
-        ]);
+        ];
+        if ($hasMultiple) {
+            $rules = array_merge($baseRules, [
+                'services_data' => 'required|array|min:1',
+                'services_data.*.service_id' => 'required|exists:services,id',
+                'services_data.*.service_category_id' => 'required|exists:service_categories,id',
+                'services_data.*.service_type_id' => 'nullable|exists:service_types,id',
+            ]);
+        } else {
+            $rules = array_merge($baseRules, [
+                'service_id' => 'required|exists:services,id',
+                'service_category_id' => 'required|exists:service_categories,id',
+                'service_type_id' => 'nullable|exists:service_types,id',
+                'payload_data' => 'required|array',
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            Log::warning('❌ BookingController::create - Validation failed', [
+            Log::warning('BookingController::create - Validation failed', [
                 'user_id' => auth()->id(),
                 'errors' => $validator->errors()->toArray(),
             ]);
@@ -80,25 +96,15 @@ class BookingController extends Controller
             );
         }
 
-        Log::info('✅ BookingController::create - Validation passed', [
+        Log::info('BookingController::create - Validation passed', [
             'user_id' => auth()->id(),
-            'service_id' => $request->service_id,
+            'service_id' => $hasMultiple ? null : $request->service_id,
+            'services_count' => $hasMultiple ? count($servicesData) : 1,
         ]);
 
-        // Verify relationships
-        $service = Service::find($request->service_id);
-        $serviceCategory = ServiceCategory::where('id', $request->service_category_id)
-            ->where('service_id', $request->service_id)
-            ->first();
-        $serviceType = ServiceType::where('id', $request->service_type_id)
-            ->where('service_id', $request->service_id)
-            ->first();
         $paymentMethod = PaymentMethod::find($request->payment_method_id);
 
-        Log::info('🔍 BookingController::create - Relationships loaded', [
-            'service_exists' => $service !== null,
-            'category_exists' => $serviceCategory !== null,
-            'type_exists' => $serviceType !== null,
+        Log::info('BookingController::create - Relationships loaded', [
             'payment_method_exists' => $paymentMethod !== null,
         ]);
 
@@ -116,6 +122,90 @@ class BookingController extends Controller
         $pointsRequired = ($paymentMethodId === 5);
         $addTwenty = ($paymentMethodId === 2);
 
+        $normalizePayload = function (array $entry): array {
+            if (isset($entry['payload_data']) && is_array($entry['payload_data'])) {
+                return $entry['payload_data'];
+            }
+            $payload = [];
+            foreach ($entry as $key => $value) {
+                if (!is_string($key)) {
+                    continue;
+                }
+                if (strpos($key, 'payload_data[') !== 0) {
+                    continue;
+                }
+                $path = trim(substr($key, strlen('payload_data[')), ']');
+                if ($path == '') {
+                    continue;
+                }
+                $segments = explode('][', $path);
+                $ref = &$payload;
+                foreach ($segments as $idx => $segment) {
+                    if ($idx === count($segments) - 1) {
+                        $ref[$segment] = $value;
+                        break;
+                    }
+                    if (!isset($ref[$segment]) || !is_array($ref[$segment])) {
+                        $ref[$segment] = [];
+                    }
+                    $ref = &$ref[$segment];
+                }
+                unset($ref);
+            }
+            return $payload;
+        };
+
+        $services = [];
+        if ($hasMultiple) {
+            foreach ($servicesData as $index => $entry) {
+                if (!is_array($entry)) {
+                    continue;
+                }
+                $payload = $normalizePayload($entry);
+                $services[] = [
+                    'index' => $index,
+                    'service_id' => $entry['service_id'] ?? null,
+                    'service_category_id' => $entry['service_category_id'] ?? null,
+                    'service_type_id' => $entry['service_type_id'] ?? null,
+                    'payload_data' => $payload,
+                    'sub_total' => $entry['sub_total'] ?? null,
+                ];
+            }
+        } else {
+            $services[] = [
+                'index' => 0,
+                'service_id' => $request->service_id,
+                'service_category_id' => $request->service_category_id,
+                'service_type_id' => $request->service_type_id,
+                'payload_data' => $request->payload_data ?? [],
+                'sub_total' => $request->input('total'),
+            ];
+        }
+
+        foreach ($services as $serviceEntry) {
+            if (empty($serviceEntry['payload_data']) || !is_array($serviceEntry['payload_data'])) {
+                return $this->errorResponse(
+                    422,
+                    trans('messages.validation_failed'),
+                    ['payload_data' => ['payload_data is required for each service request.']]
+                );
+            }
+            $service = Service::find($serviceEntry['service_id']);
+            $serviceCategory = ServiceCategory::where('id', $serviceEntry['service_category_id'])
+                ->where('service_id', $serviceEntry['service_id'])
+                ->first();
+            $serviceType = ServiceType::where('id', $serviceEntry['service_type_id'])
+                ->where('service_id', $serviceEntry['service_id'])
+                ->first();
+            if (!$service || !$serviceCategory || ($serviceEntry['service_type_id'] && !$serviceType)) {
+                return $this->errorResponse(
+                    422,
+                    trans('messages.validation_failed'),
+                    ['service' => ['Invalid service relationships for item index ' . $serviceEntry['index'] . '.']]
+                );
+            }
+        }
+
         // Validate photo if required
         if ($photoRequired) {
             if (!$request->hasFile('photo')) {
@@ -124,105 +214,163 @@ class BookingController extends Controller
             // Optionally, validate file type/size here
         }
 
-        // Validate points if required
+        $user = Auth::user();
+        $pointsValue = (float) Setting::getValue('points_value', 1);
+        $pointsCount = (int) $request->input('points');
+        $sumSubTotals = 0.0;
+        foreach ($services as $serviceEntry) {
+            $sumSubTotals += is_numeric($serviceEntry['sub_total']) ? (float) $serviceEntry['sub_total'] : 0.0;
+        }
+
+        $grandTotal = null;
         if ($pointsRequired) {
-            $user = Auth::user();
-            $pointsValue = (float) \App\Models\Setting::getValue('points_value', 1);
-            $pointsCount = (int) $request->input('points');
-            $total = 100.00;
-            if ($pointsCount <= 0) {
+            if ($pointsCount <= 0 && $sumSubTotals <= 0) {
                 return $this->errorResponse(422, 'Points count is required and must be greater than 0.');
             }
-            $total = $pointsCount * $pointsValue;
-            if ($user->points < $total) {
-                return $this->errorResponse(422, 'You do not have enough points. Required: ' . $total . ', Your points: ' . $user->points);
+            $grandTotal = $pointsCount > 0 ? $pointsCount * $pointsValue : $sumSubTotals;
+            if ($user->points < $grandTotal) {
+                return $this->errorResponse(422, 'You do not have enough points. Required: ' . $grandTotal . ', Your points: ' . $user->points);
             }
         } else {
-            $total = $request->input('total', 100.00);
+            $grandTotal = $request->input('total');
+            if (!is_numeric($grandTotal) || $grandTotal <= 0) {
+                $grandTotal = $sumSubTotals > 0 ? $sumSubTotals : 100.00;
+            }
         }
         if ($addTwenty) {
-            // $total += 20;
-            $total = $request->input('total');
+            // $grandTotal += 20;
+            $grandTotal = $request->input('total');
         }
 
-        // Generate unique order number
-        $orderNumber = 'ORD-' . strtoupper(Str::random(8));
-        while (Booking::where('order_number', $orderNumber)->exists()) {
-            $orderNumber = 'ORD-' . strtoupper(Str::random(8));
+        $perBookingTotals = [];
+        $count = count($services);
+        if ($count === 1) {
+            $perBookingTotals[] = (float) $grandTotal;
+        } else {
+            if ($sumSubTotals > 0) {
+                $allocated = 0.0;
+                foreach ($services as $index => $serviceEntry) {
+                    $raw = is_numeric($serviceEntry['sub_total']) ? (float) $serviceEntry['sub_total'] : 0.0;
+                    if ($index === $count - 1) {
+                        $perBookingTotals[$index] = round(((float) $grandTotal) - $allocated, 2);
+                    } else {
+                        $portion = round(($raw / $sumSubTotals) * (float) $grandTotal, 2);
+                        $perBookingTotals[$index] = $portion;
+                        $allocated += $portion;
+                    }
+                }
+            } else {
+                $even = round(((float) $grandTotal) / $count, 2);
+                for ($i = 0; $i < $count; $i++) {
+                    $perBookingTotals[$i] = $even;
+                }
+                $remainder = round(((float) $grandTotal) - ($even * $count), 2);
+                if ($remainder != 0.0) {
+                    $perBookingTotals[$count - 1] = round($perBookingTotals[$count - 1] + $remainder, 2);
+                }
+            }
         }
 
-        // Create the booking
-        Log::info('💾 BookingController::create - Creating booking in database', [
-            'user_id' => auth()->id(),
-            'service_id' => $request->service_id,
-            'order_number' => $orderNumber,
-            'total' => $total,
-            'payment_method_id' => $paymentMethodId,
-            'status' => 'pending',
-        ]);
-        
-        $booking = Booking::create([
-            'user_id' => auth()->id(),
-            'service_id' => $request->service_id,
-            'service_category_id' => $request->service_category_id,
-            'service_type_id' => $request->service_type_id,
-            'payload_data' => $request->payload_data,
-            'status' => 'pending',
-            'order_number' => $orderNumber,
-            'total' => $total,
-            'payment_method_id' => $paymentMethodId,
-            'is_unseen' => true,
-        ]);
-        
-        Log::info('✅ BookingController::create - Booking created in database', [
-            'booking_id' => $booking->id,
-            'order_number' => $booking->order_number,
-            'user_id' => $booking->user_id,
-            'status' => $booking->status,
-        ]);
-        
-        Log::info('🔔 BookingController::create - Observer should trigger now', [
-            'booking_id' => $booking->id,
-            'observer_registered' => class_exists('App\Observers\BookingObserver'),
-        ]);
-
-        // Handle photo upload if required
+        $photoPath = null;
         if ($photoRequired && $request->hasFile('photo')) {
             $photo = $request->file('photo');
             $photoPath = $photo->store('booking_photos', 'public');
-            $booking->payload_data = array_merge($booking->payload_data ?? [], ['photo' => $photoPath]);
-            $booking->save();
         }
 
-        $user = Auth::user();
         $pointsEarned = 0;
+        $bookings = [];
 
-        // Handle points deduction if required (points payment)
-        if ($pointsRequired) {
-            $user->points -= $total;
-            $user->save();
-        } else {
-            // Add points for non-points payment methods
-            $pointsPerOrder = (int) \App\Models\Setting::getValue('points_per_order', 10);
-            $user->increment('points', $pointsPerOrder);
-            $pointsEarned = $pointsPerOrder;
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            foreach ($services as $idx => $serviceEntry) {
+                // Generate unique order number
+                $orderNumber = 'ORD-' . strtoupper(Str::random(8));
+                while (Booking::where('order_number', $orderNumber)->exists()) {
+                    $orderNumber = 'ORD-' . strtoupper(Str::random(8));
+                }
 
-            // Store points history
-            UserPoints::create([
-                'user_id' => $user->id,
-                'booking_id' => $booking->id,
-                'points' => $pointsEarned
+                $payload = $serviceEntry['payload_data'];
+                if ($photoPath) {
+                    $payload = array_merge($payload ?? [], ['photo' => $photoPath]);
+                }
+
+                // Create the booking
+                Log::info('BookingController::create - Creating booking in database', [
+                    'user_id' => auth()->id(),
+                    'service_id' => $serviceEntry['service_id'],
+                    'order_number' => $orderNumber,
+                    'total' => $perBookingTotals[$idx] ?? $grandTotal,
+                    'payment_method_id' => $paymentMethodId,
+                    'status' => 'pending',
+                ]);
+
+                $booking = Booking::create([
+                    'user_id' => auth()->id(),
+                    'service_id' => $serviceEntry['service_id'],
+                    'service_category_id' => $serviceEntry['service_category_id'],
+                    'service_type_id' => $serviceEntry['service_type_id'],
+                    'payload_data' => $payload,
+                    'status' => 'pending',
+                    'order_number' => $orderNumber,
+                    'total' => $perBookingTotals[$idx] ?? $grandTotal,
+                    'payment_method_id' => $paymentMethodId,
+                    'is_unseen' => true,
+                ]);
+
+                Log::info('BookingController::create - Booking created in database', [
+                    'booking_id' => $booking->id,
+                    'order_number' => $booking->order_number,
+                    'user_id' => $booking->user_id,
+                    'status' => $booking->status,
+                ]);
+
+                Log::info('BookingController::create - Observer should trigger now', [
+                    'booking_id' => $booking->id,
+                    'observer_registered' => class_exists('App\\Observers\\BookingObserver'),
+                ]);
+
+                $bookings[] = $booking;
+            }
+
+            // Handle points deduction if required (points payment)
+            if ($pointsRequired) {
+                $user->points -= $grandTotal;
+                $user->save();
+            } else {
+                // Add points for non-points payment methods
+                $pointsPerOrder = (int) Setting::getValue('points_per_order', 10);
+                foreach ($bookings as $createdBooking) {
+                    $user->increment('points', $pointsPerOrder);
+                    $pointsEarned += $pointsPerOrder;
+                    UserPoints::create([
+                        'user_id' => $user->id,
+                        'booking_id' => $createdBooking->id,
+                        'points' => $pointsPerOrder
+                    ]);
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Log::error('BookingController::create - Exception caught', [
+                'error_message' => $e->getMessage(),
+                'exception_class' => get_class($e),
             ]);
+            return $this->errorResponse(500, trans('messages.booking_creation_failed'), $e->getMessage());
         }
 
-        // Load relationships for the resource
-        $booking->load('service', 'serviceCategory', 'serviceType', 'paymentMethod');
+        foreach ($bookings as $createdBooking) {
+            $createdBooking->load('service', 'serviceCategory', 'serviceType', 'paymentMethod');
+        }
 
         return $this->successResponse(
             201,
             trans('messages.booking_created'),
             [
-                'booking' => new BookingResource($booking),
+                'booking' => count($bookings) === 1
+                    ? new BookingResource($bookings[0])
+                    : BookingResource::collection(collect($bookings)),
                 'user_points' => $user->points,
                 'points_earned' => $pointsEarned
             ]
@@ -292,3 +440,4 @@ class BookingController extends Controller
         );
     }
 }
+
