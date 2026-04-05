@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.la_mavie.evyx",
+      "sha256_cert_fingerprints": [
+        "61:50:F7:7A:E5:0A:A2:0A:8D:93:93:D1:E6:30:22:38:0B:EE:0D:D0:1D:C6:6E:E5:9D:36:77:89:49:40:94:BC",
+		"DB:12:66:16:6E:D5:2F:0C:5F:33:38:83:55:C1:1D:EF:76:8B:19:A7:3A:70:12:7B:91:CF:48:E1:78:39:68:1B"
+      ]
+    }
+  }
+]
