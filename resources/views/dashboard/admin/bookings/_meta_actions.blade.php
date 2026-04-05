@@ -43,6 +43,39 @@
 
     $createdAt = data_get($booking, 'created_at');
     $updatedAt = data_get($booking, 'updated_at');
+
+    $rawPayload = data_get($booking, 'payload_data');
+    if (is_array($rawPayload)) {
+        $payload = $rawPayload;
+    } elseif (is_string($rawPayload)) {
+        $payload = json_decode($rawPayload, true) ?? [];
+    } elseif (is_object($rawPayload)) {
+        $payload = (array) $rawPayload;
+    } else {
+        $payload = [];
+    }
+
+    $paymentProofPath =
+        data_get($payload, 'photo')
+        ?? data_get($payload, 'payment_photo')
+        ?? data_get($payload, 'instapay_photo')
+        ?? data_get($payload, 'instapay_image')
+        ?? data_get($payload, 'receipt_photo')
+        ?? data_get($payload, 'receipt_image');
+
+    $paymentProofUrl = null;
+    if (is_string($paymentProofPath) && trim($paymentProofPath) !== '') {
+        $candidate = trim($paymentProofPath);
+        if (\Illuminate\Support\Str::startsWith($candidate, ['http://', 'https://'])) {
+            $paymentProofUrl = $candidate;
+        } elseif (\Illuminate\Support\Str::startsWith($candidate, '/storage/')) {
+            $paymentProofUrl = asset(ltrim($candidate, '/'));
+        } elseif (\Illuminate\Support\Str::startsWith($candidate, 'storage/')) {
+            $paymentProofUrl = asset($candidate);
+        } else {
+            $paymentProofUrl = asset('storage/' . ltrim($candidate, '/'));
+        }
+    }
 @endphp
 
 <style>
@@ -240,6 +273,22 @@
                 <div class="meta-v">{{ $payName }}</div>
             </div>
         </div>
+
+        @if($paymentProofUrl)
+            <div class="meta-row" style="align-items:flex-start;">
+                <i class="fas fa-image"></i>
+                <div style="width:100%;">
+                    <div class="meta-k">Payment Proof</div>
+                    <a href="{{ $paymentProofUrl }}" target="_blank" rel="noopener noreferrer">
+                        <img
+                            src="{{ $paymentProofUrl }}"
+                            alt="Payment proof"
+                            style="width:100%; max-height:220px; object-fit:cover; border-radius:12px; border:1px solid rgba(15,23,42,0.08); margin-top:6px;"
+                        >
+                    </a>
+                </div>
+            </div>
+        @endif
 
         {{-- Created --}}
         <div class="meta-row">

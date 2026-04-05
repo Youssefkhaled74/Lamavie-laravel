@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard\Admin;
 
 use App\Models\Booking;
+use App\Models\Area;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +58,11 @@ class BookingController extends Controller
         if ($request->filled('payment_method_id')) {
             $bookingsQuery->where('payment_method_id', $request->payment_method_id);
         }
+        if ($request->filled('area_id')) {
+            $bookingsQuery->whereHas('user', function ($query) use ($request) {
+                $query->where('area_id', $request->area_id);
+            });
+        }
         if ($request->filled('date_from')) {
             $bookingsQuery->whereDate('created_at', '>=', $request->date_from);
         }
@@ -82,8 +88,9 @@ class BookingController extends Controller
         $categories = \App\Models\ServiceCategory::all();
         $types = \App\Models\ServiceType::all();
         $paymentMethods = \App\Models\PaymentMethod::all();
+        $areas = Area::orderBy('id')->get();
 
-        return view('dashboard.admin.bookings.index', compact('bookings', 'admin', 'services', 'categories', 'types', 'paymentMethods'));
+        return view('dashboard.admin.bookings.index', compact('bookings', 'admin', 'services', 'categories', 'types', 'paymentMethods', 'areas'));
     }
 
     public function show(Booking $booking)
@@ -557,6 +564,7 @@ class BookingController extends Controller
         $booking->pickup_driver_id = $request->input('driver_id');
         // also keep legacy driver_id for older code paths
         $booking->driver_id = $request->input('driver_id');
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         // Optionally notify driver
@@ -608,6 +616,7 @@ class BookingController extends Controller
 
         $booking->lab_id = $request->lab_id;
         $booking->lab_assigned_at = now();
+        $this->moveToPickupIfApplicable($booking);
 
         try {
             $saved = $booking->save();
@@ -647,6 +656,7 @@ class BookingController extends Controller
             $booking->lab_assigned_at = now();
         }
         $booking->lab_arrived_at = now();
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         if ($booking->user) {
@@ -671,6 +681,7 @@ class BookingController extends Controller
             $booking->lab_assigned_at = now();
         }
         $booking->lab_picked_at = now();
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         if ($booking->user) {
@@ -686,6 +697,7 @@ class BookingController extends Controller
         if (!$admin) return redirect()->route('admin.login');
 
         $booking->driver_collected_at = now();
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         if ($booking->user) {
@@ -787,6 +799,16 @@ class BookingController extends Controller
             Log::error('Failed to send admin custom message', ['error' => $e->getMessage(), 'booking_id' => $booking->id, 'admin_id' => $admin->id ?? null]);
             return redirect()->back()->with('error', 'Failed to send notification (see logs).');
         }
+    }
+
+    private function moveToPickupIfApplicable(Booking $booking): void
+    {
+        $current = strtolower((string) ($booking->status ?? ''));
+        if (in_array($current, ['delivered', 'canceled', 'cancelled'], true)) {
+            return;
+        }
+
+        $booking->status = 'pickup';
     }
 
     /**

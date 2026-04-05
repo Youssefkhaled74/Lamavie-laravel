@@ -232,6 +232,28 @@
                         if ($photoPath && \Illuminate\Support\Facades\Storage::exists(ltrim($photoPath, '/'))) {
                             $photoUrl = asset('storage/' . ltrim($photoPath, '/'));
                         }
+
+                        $paymentProofPath =
+                            data_get($payload, 'photo')
+                            ?? data_get($payload, 'payment_photo')
+                            ?? data_get($payload, 'instapay_photo')
+                            ?? data_get($payload, 'instapay_image')
+                            ?? data_get($payload, 'receipt_photo')
+                            ?? data_get($payload, 'receipt_image');
+
+                        $paymentProofUrl = null;
+                        if (is_string($paymentProofPath) && trim($paymentProofPath) !== '') {
+                            $candidate = trim($paymentProofPath);
+                            if (\Illuminate\Support\Str::startsWith($candidate, ['http://', 'https://'])) {
+                                $paymentProofUrl = $candidate;
+                            } elseif (\Illuminate\Support\Str::startsWith($candidate, '/storage/')) {
+                                $paymentProofUrl = asset(ltrim($candidate, '/'));
+                            } elseif (\Illuminate\Support\Str::startsWith($candidate, 'storage/')) {
+                                $paymentProofUrl = asset($candidate);
+                            } else {
+                                $paymentProofUrl = asset('storage/' . ltrim($candidate, '/'));
+                            }
+                        }
                     @endphp
                     <div style="display:flex;align-items:center;gap:12px;">
                         <div class="avatar-wrapper" title="{{ $booking->user->name ?? '' }}">
@@ -256,6 +278,18 @@
                         <div class="value">{{ $booking->paymentMethod->name[app()->getLocale()] ?? '—' }}</div>
                     </div>
                 </div>
+
+                @if(!empty($paymentProofUrl))
+                <div class="meta-item">
+                    <i class="fas fa-image"></i>
+                    <div style="width:100%;">
+                        <div class="label">Payment Proof</div>
+                        <a href="{{ $paymentProofUrl }}" target="_blank" rel="noopener noreferrer">
+                            <img src="{{ $paymentProofUrl }}" alt="Payment proof" style="width:100%; max-height:220px; object-fit:cover; border-radius:12px; border:1px solid rgba(15,23,42,0.08); margin-top:6px;">
+                        </a>
+                    </div>
+                </div>
+                @endif
 
                 <div class="meta-item">
                     <i class="fas fa-calendar-alt"></i>

@@ -81,6 +81,13 @@ class BookingsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $query->where('payment_method_id', $this->request->payment_method_id);
         }
 
+        // Filter by user area
+        if ($this->request->filled('area_id')) {
+            $query->whereHas('user', function ($q) {
+                $q->where('area_id', $this->request->area_id);
+            });
+        }
+
         // Filter by date range
         if ($this->request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $this->request->date_from);

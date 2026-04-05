@@ -272,8 +272,11 @@ class BookingController extends Controller
         }
 
         $photoPath = null;
-        if ($photoRequired && $request->hasFile('photo')) {
+        if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
+            if (!$photo->isValid()) {
+                return $this->errorResponse(422, 'Uploaded payment photo is invalid.');
+            }
             $photoPath = $photo->store('booking_photos', 'public');
         }
 
@@ -440,4 +443,3 @@ class BookingController extends Controller
         );
     }
 }
-

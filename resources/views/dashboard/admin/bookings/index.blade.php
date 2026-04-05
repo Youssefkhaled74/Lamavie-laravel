@@ -39,6 +39,9 @@
                     <div class="text-muted small me-3">
                         Showing <strong id="visibleCount">{{ $bookings->count() }}</strong> of <strong id="totalCount">{{ $bookings->total() }}</strong> results
                     </div>
+                    <button id="reloadBookingsSectionBtn" class="btn btn-outline-primary btn-sm me-2" type="button" title="Reload bookings section">
+                        <i class="fas fa-rotate me-1"></i>Reload Section
+                    </button>
                     <button id="compactToggle" class="btn btn-outline-secondary btn-sm" type="button" aria-pressed="false" data-en="Compact View" data-ar="عرض مضغوط">
                         <i class="fas fa-compress me-1"></i>Compact View
                     </button>
@@ -98,6 +101,20 @@
                 </div>
             </div>
             <div class="row g-3 mt-2">
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Area</label>
+                    <select name="area_id" class="form-select">
+                        <option value="">All Areas</option>
+                        @foreach($areas as $area)
+                            @php
+                                $areaName = is_array($area->name) ? ($area->name['en'] ?? $area->name['ar'] ?? 'N/A') : $area->name;
+                            @endphp
+                            <option value="{{ $area->id }}" {{ request('area_id') == $area->id ? 'selected' : '' }}>
+                                {{ $areaName }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-md-3">
                     <label class="form-label small fw-bold">Status</label>
                     <select name="status" class="form-select">
@@ -122,11 +139,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="form-label small fw-bold">Date From</label>
                     <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="form-label small fw-bold">Date To</label>
                     <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
                 </div>
@@ -161,6 +178,7 @@
 
         
 
+        <div id="bookingsSection">
         <div class="table-responsive">
             <table class="table table-hover table-bordered table-striped" id="bookings-table">
                 <thead class="bg-light">
@@ -262,6 +280,7 @@
         </div>
         <div class="mt-3">
             {{ $bookings->links('vendor.pagination.bootstrap-5') }}
+        </div>
         </div>
     </div>
 </div>
@@ -743,6 +762,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const exportBtn = document.getElementById('exportBtn');
     const filterForm = document.getElementById('filterForm');
+    const reloadBookingsSectionBtn = document.getElementById('reloadBookingsSectionBtn');
     
     if (exportBtn && filterForm) {
         exportBtn.addEventListener('click', function() {
@@ -802,6 +822,61 @@ document.addEventListener('DOMContentLoaded', function() {
         if (visibleCountEl) visibleCountEl.textContent = visible;
     }
 
+    async function reloadBookingsSection() {
+        if (!reloadBookingsSectionBtn) return;
+
+        const original = reloadBookingsSectionBtn.innerHTML;
+        reloadBookingsSectionBtn.disabled = true;
+        reloadBookingsSectionBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Reloading...';
+
+        try {
+            const response = await fetch(window.location.href, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to reload bookings section');
+            }
+
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const freshSection = doc.querySelector('#bookingsSection');
+            const currentSection = document.querySelector('#bookingsSection');
+            const freshVisibleCount = doc.querySelector('#visibleCount');
+            const freshTotalCount = doc.querySelector('#totalCount');
+
+            if (!freshSection || !currentSection) {
+                throw new Error('Bookings section not found');
+            }
+
+            currentSection.innerHTML = freshSection.innerHTML;
+            if (visibleCountEl && freshVisibleCount) {
+                visibleCountEl.textContent = freshVisibleCount.textContent.trim();
+            }
+            if (totalCountEl && freshTotalCount) {
+                totalCountEl.textContent = freshTotalCount.textContent.trim();
+            }
+            updateVisibleCount();
+
+            if (compactToggle && compactToggle.classList.contains('active')) {
+                setCompact(true, false);
+            }
+        } catch (err) {
+            console.error(err);
+            window.location.reload();
+            return;
+        } finally {
+            reloadBookingsSectionBtn.disabled = false;
+            reloadBookingsSectionBtn.innerHTML = original;
+        }
+    }
+
     // Initialize visible count and total (server-provided)
     updateVisibleCount();
 
@@ -839,8 +914,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Compact view toggle: toggles denser table layout and persists to localStorage
     const compactToggle = document.getElementById('compactToggle');
-    const bookingsTable = document.getElementById('bookings-table');
     function setCompact(enabled, persist = true) {
+        const bookingsTable = document.getElementById('bookings-table');
         if (!bookingsTable) return;
         if (enabled) {
             bookingsTable.classList.add('compact');
@@ -856,6 +931,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (compactToggle) {
         compactToggle.addEventListener('click', function() {
+            const bookingsTable = document.getElementById('bookings-table');
             const isActive = bookingsTable && bookingsTable.classList.contains('compact');
             setCompact(!isActive);
         });
@@ -863,6 +939,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const saved = localStorage.getItem('bookings_compact');
         if (saved === '1') setCompact(true, false);
     }
+
+    if (reloadBookingsSectionBtn) {
+        reloadBookingsSectionBtn.addEventListener('click', reloadBookingsSection);
+    }
+
+    setInterval(() => {
+        window.location.reload();
+    }, 5 * 60 * 1000);
     // Mark all bookings as seen when admin opens the bookings index
     (function markAllSeen() {
         try {
@@ -891,3 +975,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+

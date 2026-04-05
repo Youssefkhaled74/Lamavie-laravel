@@ -34,6 +34,7 @@ class BookingController extends Controller
     }
 
     $booking->lab_arrived_at = now();
+    $this->moveToPickupIfApplicable($booking);
     $booking->save();
 
         // Log lab arrived action
@@ -111,6 +112,7 @@ class BookingController extends Controller
     }
 
     $booking->lab_picked_at = now();
+    $this->moveToPickupIfApplicable($booking);
     $booking->save();
 
         // Log lab picked action
@@ -162,5 +164,15 @@ class BookingController extends Controller
         }
 
         return redirect()->route('lab.bookings.show', $booking)->with('success', 'Marked as picked from lab.');
+    }
+
+    private function moveToPickupIfApplicable(Booking $booking): void
+    {
+        $current = strtolower((string) ($booking->status ?? ''));
+        if (in_array($current, ['delivered', 'canceled', 'cancelled'], true)) {
+            return;
+        }
+
+        $booking->status = 'pickup';
     }
 }

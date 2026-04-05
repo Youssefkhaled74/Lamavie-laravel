@@ -281,6 +281,7 @@ class BookingController extends Controller
 
         $booking->lab_id = $request->lab_id;
         $booking->lab_assigned_at = now();
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         if ($booking->user) {
@@ -352,6 +353,7 @@ class BookingController extends Controller
         }
 
         $booking->lab_arrived_at = now();
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         // Log lab arrived action by driver
@@ -437,6 +439,7 @@ class BookingController extends Controller
         }
 
         $booking->lab_picked_at = now();
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         // Log lab picked action by driver
@@ -519,6 +522,7 @@ class BookingController extends Controller
         }
 
         $booking->driver_collected_at = now();
+        $this->moveToPickupIfApplicable($booking);
         $booking->save();
 
         // Log driver collected action
@@ -636,5 +640,15 @@ class BookingController extends Controller
         }
 
         return redirect()->route('driver.bookings.show', $booking)->with('success', 'Returned to user.');
+    }
+
+    private function moveToPickupIfApplicable(Booking $booking): void
+    {
+        $current = strtolower((string) ($booking->status ?? ''));
+        if (in_array($current, ['delivered', 'canceled', 'cancelled'], true)) {
+            return;
+        }
+
+        $booking->status = 'pickup';
     }
 }
